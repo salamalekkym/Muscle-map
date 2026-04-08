@@ -2,404 +2,746 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover"/>
 <title>Карта мышц</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased}
 :root{
-  --bg:#0d0d0d;
-  --surface:#1a1a1a;
-  --surface2:#222;
-  --border:#2e2e2e;
-  --text:#f0f0f0;
-  --muted:#888;
-  --accent:#b5f542;
-  --accent2:#42f5c5;
-  --syn:#4299e1;
-  --ant:#f56565;
+  --bg:#f2f2f7; --card:#ffffff; --card2:#fafafa;
+  --hairline:rgba(60,60,67,.12); --hairline2:rgba(60,60,67,.22);
+  --text:#1c1c1e; --text2:#3c3c43; --muted:#8e8e93;
+  --accent:#FF2D55; --accent-soft:#FFE5EC;
+  --syn:#0A84FF; --syn-soft:#E5F1FF;
+  --gold:#FFB800;
+  --muscle-fill:#f5f5f7; --muscle-stroke:#b8b8c0; --body-stroke:#3a3a44;
 }
-html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif;overflow-x:hidden}
-.app{display:flex;flex-direction:column;height:100vh;max-width:480px;margin:0 auto;padding:12px 14px}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#000; --card:#1c1c1e; --card2:#2c2c2e;
+    --hairline:rgba(255,255,255,.10); --hairline2:rgba(255,255,255,.18);
+    --text:#fff; --text2:#ebebf5; --muted:#8e8e93;
+    --accent-soft:rgba(255,45,85,.18); --syn-soft:rgba(10,132,255,.18);
+    --muscle-fill:#2c2c2e; --muscle-stroke:#48484a; --body-stroke:#8e8e93;
+  }
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text',system-ui,sans-serif;overflow:hidden;letter-spacing:-.01em}
 
-.tgl{display:flex;background:var(--surface);border-radius:12px;padding:3px;gap:3px;margin-bottom:14px;flex-shrink:0}
-.tgl button{flex:1;padding:9px;border:none;background:transparent;border-radius:9px;font-size:13px;font-weight:600;letter-spacing:.3px;color:var(--muted);cursor:pointer;transition:all .2s}
-.tgl button.on{background:var(--accent);color:#000}
+.app{display:flex;flex-direction:column;height:100vh;max-width:480px;margin:0 auto;position:relative}
 
-.body-wrap{display:flex;gap:10px;align-items:flex-start;flex:1;min-height:0}
+/* ===== VIEWS ===== */
+.view{flex:1;overflow-y:auto;padding:14px 16px 90px;-webkit-overflow-scrolling:touch;display:none}
+.view.on{display:block}
+.view::-webkit-scrollbar{display:none}
 
-.svg-col{flex:0 0 148px;position:relative}
-svg{width:100%;display:block}
+/* ===== HEADER ===== */
+.hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.hdr h1{font-size:26px;font-weight:800;letter-spacing:-.6px}
+.hdr .sub{font-size:12px;color:var(--muted);font-weight:500;margin-top:2px}
+.hdr .badge{width:38px;height:38px;border-radius:50%;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:18px;cursor:pointer}
 
-.mz{cursor:pointer;transition:opacity .18s,filter .18s}
-.mz:hover{filter:brightness(1.2)}
+/* ===== SEARCH ===== */
+.search{position:relative;margin-bottom:12px}
+.search input{width:100%;padding:11px 14px 11px 36px;border-radius:12px;border:none;background:rgba(120,120,128,.16);color:var(--text);font-size:15px;font-family:inherit;outline:none;letter-spacing:-.2px}
+.search input::placeholder{color:var(--muted)}
+.search::before{content:'⌕';position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:18px;font-weight:700}
 
-.panel{flex:1;display:flex;flex-direction:column;gap:0;overflow:hidden}
-.panel-idle{display:flex;align-items:center;justify-content:center;height:100%;padding:20px}
-.panel-idle p{font-size:13px;color:var(--muted);text-align:center;line-height:1.8}
+/* ===== TOGGLE FRONT/BACK ===== */
+.tgl{display:flex;background:rgba(120,120,128,.16);border-radius:10px;padding:2px;gap:2px;margin-bottom:10px}
+.tgl button{flex:1;padding:8px;border:none;background:transparent;border-radius:8px;font-size:13px;font-weight:600;color:var(--text);cursor:pointer;transition:.25s}
+.tgl button.on{background:var(--card);box-shadow:0 3px 8px rgba(0,0,0,.12),0 1px 2px rgba(0,0,0,.04)}
 
-.muscle-name{font-size:17px;font-weight:700;letter-spacing:-.3px;margin-bottom:8px;color:var(--text)}
+/* ===== FIGURE ===== */
+.fig-card{background:linear-gradient(180deg,var(--card) 0%,var(--card2) 100%);border-radius:22px;padding:8px;border:.5px solid var(--hairline);box-shadow:0 1px 3px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.04);height:380px;position:relative;overflow:hidden}
+.fig-card::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 30%,rgba(255,45,85,.05),transparent 60%);pointer-events:none}
+.fig-card svg{width:100%;height:100%;display:block;position:relative}
+.mz{cursor:pointer;transition:fill .25s ease,opacity .25s ease;fill:var(--muscle-fill);stroke:var(--muscle-stroke);stroke-width:.7}
+.mz.dim{opacity:.35}
+.mz.act{fill:var(--accent);stroke:var(--accent)}
+.mz.syn{fill:var(--syn);stroke:var(--syn);opacity:.7}
+.body-line{fill:var(--card);stroke:var(--body-stroke);stroke-width:1;stroke-linejoin:round}
 
-.tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px}
-.tag{padding:3px 9px;border-radius:6px;font-size:11px;font-weight:600;letter-spacing:.2px}
-.tag-main{background:rgba(181,245,66,.15);color:var(--accent);border:1px solid rgba(181,245,66,.25)}
-.tag-syn{background:rgba(66,153,225,.15);color:var(--syn);border:1px solid rgba(66,153,225,.25)}
-.tag-ant{background:rgba(245,101,101,.15);color:var(--ant);border:1px solid rgba(245,101,101,.25)}
+/* ===== MUSCLE GRID ===== */
+.grid-title{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin:18px 4px 8px}
+.mgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.mcard{background:var(--card);border:.5px solid var(--hairline);border-radius:14px;padding:12px 8px;text-align:center;cursor:pointer;font-size:12px;font-weight:600;color:var(--text);box-shadow:0 1px 2px rgba(0,0,0,.03);transition:.15s}
+.mcard:active{transform:scale(.96)}
+.mcard.active{background:var(--accent);color:#fff;border-color:var(--accent);box-shadow:0 6px 16px rgba(255,45,85,.3)}
+.mcard .ic{font-size:22px;display:block;margin-bottom:4px}
 
-.legend{font-size:10px;color:var(--muted);margin-bottom:8px;line-height:1.7}
+/* ===== SECTION CARD ===== */
+.sec{background:var(--card);border-radius:18px;padding:14px;border:.5px solid var(--hairline);box-shadow:0 1px 3px rgba(0,0,0,.04);margin-bottom:12px}
+.sec h2{font-size:17px;font-weight:800;letter-spacing:-.4px;margin-bottom:10px}
 
-.vlist{flex:1;overflow-y:auto}
-.vlist::-webkit-scrollbar{display:none}
-.vsec{font-size:10px;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);margin:6px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--border)}
-.vi{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);text-decoration:none;cursor:pointer}
-.vi:last-child{border-bottom:none}
-.vico{width:32px;height:32px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--accent);font-size:11px;font-weight:700;transition:background .15s}
-.vi:hover .vico{background:rgba(181,245,66,.12)}
-.vt{font-size:12px;color:var(--text);line-height:1.4;font-weight:500}
+/* ===== BOTTOM SHEET ===== */
+.sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);opacity:0;pointer-events:none;transition:.25s;z-index:50}
+.sheet-bg.on{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:0;right:0;bottom:0;max-width:480px;margin:0 auto;background:var(--card);border-radius:22px 22px 0 0;padding:10px 18px 30px;max-height:82vh;overflow-y:auto;transform:translateY(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);z-index:51;box-shadow:0 -10px 40px rgba(0,0,0,.2)}
+.sheet.on{transform:translateY(0)}
+.sheet::-webkit-scrollbar{display:none}
+.sheet-grab{width:38px;height:5px;background:var(--hairline2);border-radius:3px;margin:6px auto 14px}
 
-.chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px;flex-shrink:0;overflow-y:auto;max-height:72px}
-.chips::-webkit-scrollbar{display:none}
-.chip{padding:5px 11px;border-radius:20px;font-size:11px;font-weight:500;border:1px solid var(--border);cursor:pointer;color:var(--muted);background:var(--surface);white-space:nowrap;transition:all .15s}
-.chip.active{background:var(--accent);color:#000;border-color:var(--accent)}
-.chip:hover:not(.active){border-color:#555;color:var(--text)}
+.muscle-cat{font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.6px}
+.muscle-name{font-size:24px;font-weight:800;letter-spacing:-.6px;margin-bottom:8px}
+.tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px}
+.tag{padding:5px 11px;border-radius:8px;font-size:11px;font-weight:600;display:inline-flex;align-items:center;gap:5px}
+.tag::before{content:'';width:6px;height:6px;border-radius:50%}
+.tag-main{background:var(--accent-soft);color:var(--accent)}
+.tag-main::before{background:var(--accent)}
+.tag-syn{background:var(--syn-soft);color:var(--syn)}
+.tag-syn::before{background:var(--syn)}
+
+.vsec{font-size:11px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);font-weight:700;margin:18px 0 6px}
+.vi{display:flex;align-items:center;gap:11px;padding:11px 0;border-top:.5px solid var(--hairline);text-decoration:none;color:var(--text)}
+.vi:first-of-type{border-top:none}
+.vico{width:34px;height:34px;border-radius:10px;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--accent);font-size:13px;font-weight:800}
+.vt{font-size:14px;line-height:1.3;font-weight:500;flex:1;letter-spacing:-.1px}
+.star{font-size:20px;color:var(--muted);cursor:pointer;padding:6px;line-height:1;flex-shrink:0;transition:.15s}
+.star.on{color:var(--gold)}
+.star:active{transform:scale(.8)}
+
+/* ===== TAB BAR ===== */
+.tabbar{position:fixed;left:0;right:0;bottom:0;max-width:480px;margin:0 auto;background:rgba(255,255,255,.85);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border-top:.5px solid var(--hairline);display:flex;padding:6px 0 18px;z-index:30}
+@media (prefers-color-scheme: dark){.tabbar{background:rgba(28,28,30,.85)}}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px;border:none;background:none;color:var(--muted);cursor:pointer;font-family:inherit;font-size:10px;font-weight:600}
+.tab svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tab.on{color:var(--accent)}
+
+/* ===== EMPTY STATE ===== */
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:60vh;text-align:center;gap:12px;color:var(--muted)}
+.empty .ico{width:72px;height:72px;border-radius:24px;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;font-size:32px;color:var(--accent)}
+.empty h3{font-size:20px;font-weight:800;color:var(--text);letter-spacing:-.4px}
+.empty p{font-size:13px;line-height:1.5;max-width:240px}
+
+/* ===== PROFILE ===== */
+.field{margin-bottom:12px}
+.field label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:6px}
+.field input{width:100%;padding:11px 13px;border-radius:11px;border:.5px solid var(--hairline2);background:var(--card2);color:var(--text);font-size:15px;font-family:inherit;outline:none;letter-spacing:-.2px}
+.field input:focus{border-color:var(--accent)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.photos{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:6px}
+.photo{aspect-ratio:3/4;border-radius:14px;background:var(--card2);border:1.5px dashed var(--hairline2);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);font-size:11px;font-weight:600;overflow:hidden;position:relative}
+.photo span{font-size:24px;display:block;margin-bottom:4px}
+.photo img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+.photo input{display:none}
+.btn{display:block;width:100%;padding:14px;border:none;background:var(--accent);color:#fff;font-size:15px;font-weight:700;border-radius:14px;cursor:pointer;font-family:inherit;letter-spacing:-.2px;margin-top:6px;box-shadow:0 6px 16px rgba(255,45,85,.3)}
+.btn:active{transform:scale(.98)}
+
+.profile-hdr{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+.avatar{width:64px;height:64px;border-radius:50%;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:28px;font-weight:800}
+
+/* search results */
+.sr-list{margin-top:8px}
+.sr-empty{text-align:center;padding:30px;color:var(--muted);font-size:13px}
 </style>
 </head>
 <body>
+
 <div class="app">
-  <div class="tgl">
-    <button id="bf" class="on" onclick="sv('front')">Спереди</button>
-    <button id="bb" onclick="sv('back')">Сзади</button>
+
+  <!-- ═══════════ HOME ═══════════ -->
+  <div class="view" id="v-home">
+    <div class="hdr"><div><h1>Главная</h1><div class="sub">Привет 👋</div></div></div>
+    <div class="empty">
+      <div class="ico">🏠</div>
+      <h3>Скоро здесь появится</h3>
+      <p>Лента тренировок, прогресс и рекомендации</p>
+    </div>
   </div>
 
-  <div class="body-wrap">
-    <div class="svg-col">
-      <svg viewBox="0 0 180 410" xmlns="http://www.w3.org/2000/svg">
+  <!-- ═══════════ FOOD ═══════════ -->
+  <div class="view" id="v-food">
+    <div class="hdr"><div><h1>Питание</h1><div class="sub">Дневник и рецепты</div></div></div>
+    <div class="empty">
+      <div class="ico">🍎</div>
+      <h3>В разработке</h3>
+      <p>Тут будет дневник питания, расчёт КБЖУ и подборки рецептов</p>
+    </div>
+  </div>
 
-        <!-- === SILHOUETTE BASE === -->
-        <g id="sil" fill="#1e1e1e" stroke="#333" stroke-width="0.8">
-          <!-- head -->
-          <circle cx="90" cy="26" r="19"/>
-          <!-- neck -->
-          <rect x="84" y="43" width="12" height="16" rx="3"/>
-          <!-- torso -->
-          <polygon points="48,60 132,60 118,188 62,188"/>
-          <!-- left upper arm -->
-          <ellipse cx="36" cy="115" rx="12" ry="33"/>
-          <!-- right upper arm -->
-          <ellipse cx="144" cy="115" rx="12" ry="33"/>
-          <!-- left forearm -->
-          <ellipse cx="32" cy="175" rx="9" ry="25"/>
-          <!-- right forearm -->
-          <ellipse cx="148" cy="175" rx="9" ry="25"/>
-          <!-- hip -->
-          <ellipse cx="90" cy="207" rx="33" ry="13"/>
-          <!-- left thigh -->
-          <ellipse cx="71" cy="273" rx="21" ry="42"/>
-          <!-- right thigh -->
-          <ellipse cx="109" cy="273" rx="21" ry="42"/>
-          <!-- left shin -->
-          <ellipse cx="68" cy="357" rx="13" ry="27"/>
-          <!-- right shin -->
-          <ellipse cx="112" cy="357" rx="13" ry="27"/>
-          <!-- left foot -->
-          <ellipse cx="68" cy="390" rx="14" ry="6"/>
-          <!-- right foot -->
-          <ellipse cx="112" cy="390" rx="14" ry="6"/>
-        </g>
-
-        <!-- ===== FRONT ZONES ===== -->
-        <g id="fz">
-          <!-- CHEST — single unified shape -->
-          <path class="mz" data-g="chest"
-            d="M 56,72 Q 90,62 124,72 L 122,112 Q 90,122 58,112 Z"
-            fill="#b5f542" opacity="0.45" onclick="sm('chest')"/>
-
-          <!-- SHOULDERS front (2 zones, 1 group) -->
-          <ellipse class="mz" data-g="shoulders" cx="43" cy="72" rx="14" ry="12"
-            fill="#42f5c5" opacity="0.45" onclick="sm('shoulders')"/>
-          <ellipse class="mz" data-g="shoulders" cx="137" cy="72" rx="14" ry="12"
-            fill="#42f5c5" opacity="0.45" onclick="sm('shoulders')"/>
-
-          <!-- BICEPS -->
-          <ellipse class="mz" data-g="biceps" cx="34" cy="117" rx="10" ry="22"
-            fill="#fac775" opacity="0.45" onclick="sm('biceps')"/>
-          <ellipse class="mz" data-g="biceps" cx="146" cy="117" rx="10" ry="22"
-            fill="#fac775" opacity="0.45" onclick="sm('biceps')"/>
-
-          <!-- FOREARMS front -->
-          <ellipse class="mz" data-g="forearms" cx="30" cy="175" rx="8" ry="21"
-            fill="#97c459" opacity="0.45" onclick="sm('forearms')"/>
-          <ellipse class="mz" data-g="forearms" cx="150" cy="175" rx="8" ry="21"
-            fill="#97c459" opacity="0.45" onclick="sm('forearms')"/>
-
-          <!-- CORE -->
-          <path class="mz" data-g="core"
-            d="M 78,115 L 102,115 L 100,178 Q 90,183 80,178 Z"
-            fill="#ed93b1" opacity="0.45" onclick="sm('core')"/>
-
-          <!-- QUADS — two shapes, one group -->
-          <path class="mz" data-g="quads"
-            d="M 51,233 Q 72,226 88,230 L 87,313 Q 71,320 53,312 Z"
-            fill="#7f77dd" opacity="0.45" onclick="sm('quads')"/>
-          <path class="mz" data-g="quads"
-            d="M 92,230 Q 108,226 129,233 L 127,312 Q 109,320 93,313 Z"
-            fill="#7f77dd" opacity="0.45" onclick="sm('quads')"/>
-
-          <!-- ADDUCTORS (inner thighs) -->
-          <path class="mz" data-g="adductors"
-            d="M 88,233 Q 90,228 92,233 L 95,305 Q 90,310 85,305 Z"
-            fill="#f0997b" opacity="0.45" onclick="sm('adductors')"/>
-
-          <!-- CALVES front — single wide group -->
-          <path class="mz" data-g="calves"
-            d="M 55,332 Q 70,324 84,328 L 83,380 Q 70,385 56,378 Z"
-            fill="#5dcaa5" opacity="0.45" onclick="sm('calves')"/>
-          <path class="mz" data-g="calves"
-            d="M 96,328 Q 110,324 125,332 L 124,378 Q 110,385 97,380 Z"
-            fill="#5dcaa5" opacity="0.45" onclick="sm('calves')"/>
-        </g>
-
-        <!-- ===== BACK ZONES ===== -->
-        <g id="bz" style="display:none">
-          <!-- TRAPS — upper trapezius -->
-          <path class="mz" data-g="traps"
-            d="M 75,59 L 105,59 Q 112,60 120,73 Q 90,88 60,73 Q 68,60 75,59 Z"
-            fill="#f4c0d1" opacity="0.45" onclick="sm('traps')"/>
-
-          <!-- LATS — side wings (2 shapes, 1 group) -->
-          <path class="mz" data-g="lats"
-            d="M 50,87 L 66,92 L 64,162 L 49,155 Z"
-            fill="#85b7eb" opacity="0.45" onclick="sm('lats')"/>
-          <path class="mz" data-g="lats"
-            d="M 130,87 L 114,92 L 116,162 L 131,155 Z"
-            fill="#85b7eb" opacity="0.45" onclick="sm('lats')"/>
-
-          <!-- UPPER BACK (rhomboids + mid traps) -->
-          <path class="mz" data-g="upperback"
-            d="M 66,92 L 114,92 L 112,162 L 68,162 Z"
-            fill="#afa9ec" opacity="0.45" onclick="sm('upperback')"/>
-
-          <!-- SHOULDERS back -->
-          <ellipse class="mz" data-g="shoulders" cx="43" cy="72" rx="14" ry="12"
-            fill="#42f5c5" opacity="0.45" onclick="sm('shoulders')"/>
-          <ellipse class="mz" data-g="shoulders" cx="137" cy="72" rx="14" ry="12"
-            fill="#42f5c5" opacity="0.45" onclick="sm('shoulders')"/>
-
-          <!-- TRICEPS -->
-          <ellipse class="mz" data-g="triceps" cx="34" cy="117" rx="10" ry="22"
-            fill="#f4c0d1" opacity="0.45" onclick="sm('triceps')"/>
-          <ellipse class="mz" data-g="triceps" cx="146" cy="117" rx="10" ry="22"
-            fill="#f4c0d1" opacity="0.45" onclick="sm('triceps')"/>
-
-          <!-- FOREARMS back -->
-          <ellipse class="mz" data-g="forearms" cx="30" cy="175" rx="8" ry="21"
-            fill="#97c459" opacity="0.45" onclick="sm('forearms')"/>
-          <ellipse class="mz" data-g="forearms" cx="150" cy="175" rx="8" ry="21"
-            fill="#97c459" opacity="0.45" onclick="sm('forearms')"/>
-
-          <!-- GLUTES — single unified shape -->
-          <path class="mz" data-g="glutes"
-            d="M 50,193 Q 72,184 90,187 Q 108,184 130,193 L 128,232 Q 108,238 90,236 Q 72,238 52,232 Z"
-            fill="#f0997b" opacity="0.45" onclick="sm('glutes')"/>
-
-          <!-- HAMSTRINGS — single unified group -->
-          <path class="mz" data-g="hamstrings"
-            d="M 51,235 Q 72,229 88,233 L 87,314 Q 71,322 52,314 Z"
-            fill="#c0dd97" opacity="0.45" onclick="sm('hamstrings')"/>
-          <path class="mz" data-g="hamstrings"
-            d="M 92,233 Q 108,229 129,235 L 128,314 Q 109,322 93,314 Z"
-            fill="#c0dd97" opacity="0.45" onclick="sm('hamstrings')"/>
-
-          <!-- CALVES back — combined group -->
-          <path class="mz" data-g="calves"
-            d="M 55,332 Q 70,324 84,328 L 83,380 Q 70,385 56,378 Z"
-            fill="#5dcaa5" opacity="0.45" onclick="sm('calves')"/>
-          <path class="mz" data-g="calves"
-            d="M 96,328 Q 110,324 125,332 L 124,378 Q 110,385 97,380 Z"
-            fill="#5dcaa5" opacity="0.45" onclick="sm('calves')"/>
-        </g>
-
-      </svg>
+  <!-- ═══════════ LIBRARY ═══════════ -->
+  <div class="view on" id="v-lib">
+    <div class="hdr">
+      <div><h1>Библиотека</h1><div class="sub">Анатомия и упражнения</div></div>
+      <div class="badge" onclick="openFavs()">★</div>
     </div>
 
-    <!-- INFO PANEL -->
-    <div class="panel">
-      <div id="ip">
-        <div class="panel-idle">
-          <p>Нажми на мышцу<br>на схеме или<br>выбери из списка</p>
-        </div>
+    <div class="search">
+      <input id="srch" placeholder="Поиск упражнений" oninput="onSearch()"/>
+    </div>
+
+    <div id="srResults" style="display:none"></div>
+
+    <div id="libMain">
+      <div class="tgl">
+        <button id="bf" class="on" onclick="sv('front')">Спереди</button>
+        <button id="bb" onclick="sv('back')">Сзади</button>
+      </div>
+
+      <div class="fig-card">
+        <svg viewBox="0 0 200 470" xmlns="http://www.w3.org/2000/svg">
+
+          <!-- ═══ FRONT ═══ -->
+          <g id="frontView">
+            <!-- BODY OUTLINE (head, neck, hands, feet, body filling around muscles) -->
+            <g class="body-line">
+              <!-- Head -->
+              <ellipse cx="100" cy="32" rx="22" ry="26"/>
+              <!-- Neck -->
+              <path d="M 88,56 L 112,56 L 114,72 L 86,72 Z"/>
+              <!-- Body silhouette outline -->
+              <path d="M 60,76 Q 50,82 44,98 L 30,118 Q 24,150 26,180 L 32,210 Q 38,222 44,228
+                       L 50,240 Q 46,260 48,290 L 52,330 Q 54,360 58,400 L 62,440 Q 64,455 72,458
+                       L 86,458 Q 92,452 92,440 L 90,400 Q 92,360 96,320 L 100,290
+                       Q 104,320 106,360 L 108,400 L 108,440 Q 108,452 114,458
+                       L 128,458 Q 136,455 138,440 L 142,400 Q 146,360 148,330 L 152,290
+                       Q 154,260 150,240 L 156,228 Q 162,222 168,210 L 174,180
+                       Q 176,150 170,118 L 156,98 Q 150,82 140,76 Z"/>
+              <!-- Hands -->
+              <path d="M 22,232 Q 16,244 20,254 Q 28,256 32,250 L 32,232 Z"/>
+              <path d="M 178,232 Q 184,244 180,254 Q 172,256 168,250 L 168,232 Z"/>
+              <!-- Feet -->
+              <path d="M 56,458 Q 50,464 56,468 L 84,468 Q 88,464 86,458 Z"/>
+              <path d="M 116,458 Q 114,464 116,468 L 144,468 Q 150,464 144,458 Z"/>
+            </g>
+
+            <!-- MUSCLE ZONES (clickable, anatomically separated) -->
+            <!-- PECS — left & right halves -->
+            <path class="mz" data-g="chest" onclick="sm('chest')"
+              d="M 64,80 Q 78,76 96,80 Q 99,108 96,118 Q 80,124 66,118 Q 58,98 64,80 Z"/>
+            <path class="mz" data-g="chest" onclick="sm('chest')"
+              d="M 136,80 Q 122,76 104,80 Q 101,108 104,118 Q 120,124 134,118 Q 142,98 136,80 Z"/>
+
+            <!-- DELTOIDS front -->
+            <path class="mz" data-g="shoulders" onclick="sm('shoulders')"
+              d="M 60,78 Q 44,84 36,104 Q 32,118 38,128 Q 50,126 58,114 Q 64,96 60,78 Z"/>
+            <path class="mz" data-g="shoulders" onclick="sm('shoulders')"
+              d="M 140,78 Q 156,84 164,104 Q 168,118 162,128 Q 150,126 142,114 Q 136,96 140,78 Z"/>
+
+            <!-- BICEPS -->
+            <path class="mz" data-g="biceps" onclick="sm('biceps')"
+              d="M 36,128 Q 30,150 32,168 Q 42,172 48,168 Q 50,150 48,128 Q 42,124 36,128 Z"/>
+            <path class="mz" data-g="biceps" onclick="sm('biceps')"
+              d="M 164,128 Q 170,150 168,168 Q 158,172 152,168 Q 150,150 152,128 Q 158,124 164,128 Z"/>
+
+            <!-- FOREARMS -->
+            <path class="mz" data-g="forearms" onclick="sm('forearms')"
+              d="M 32,170 Q 24,195 28,224 Q 38,228 44,224 Q 48,195 46,170 Q 38,167 32,170 Z"/>
+            <path class="mz" data-g="forearms" onclick="sm('forearms')"
+              d="M 168,170 Q 176,195 172,224 Q 162,228 156,224 Q 152,195 154,170 Q 162,167 168,170 Z"/>
+
+            <!-- ABS — six pack squares -->
+            <rect class="mz" data-g="core" onclick="sm('core')" x="82" y="124" width="16" height="14" rx="3"/>
+            <rect class="mz" data-g="core" onclick="sm('core')" x="102" y="124" width="16" height="14" rx="3"/>
+            <rect class="mz" data-g="core" onclick="sm('core')" x="82" y="142" width="16" height="14" rx="3"/>
+            <rect class="mz" data-g="core" onclick="sm('core')" x="102" y="142" width="16" height="14" rx="3"/>
+            <rect class="mz" data-g="core" onclick="sm('core')" x="82" y="160" width="16" height="14" rx="3"/>
+            <rect class="mz" data-g="core" onclick="sm('core')" x="102" y="160" width="16" height="14" rx="3"/>
+            <!-- lower abs -->
+            <path class="mz" data-g="core" onclick="sm('core')"
+              d="M 82,178 L 118,178 L 112,200 Q 100,206 88,200 Z"/>
+
+            <!-- OBLIQUES -->
+            <path class="mz" data-g="core" onclick="sm('core')"
+              d="M 64,124 Q 60,160 70,196 L 80,196 L 80,124 Z"/>
+            <path class="mz" data-g="core" onclick="sm('core')"
+              d="M 136,124 Q 140,160 130,196 L 120,196 L 120,124 Z"/>
+
+            <!-- QUADS -->
+            <path class="mz" data-g="quads" onclick="sm('quads')"
+              d="M 60,238 Q 50,290 58,335 Q 72,342 86,335 Q 92,288 88,242 Q 74,236 60,238 Z"/>
+            <path class="mz" data-g="quads" onclick="sm('quads')"
+              d="M 140,238 Q 150,290 142,335 Q 128,342 114,335 Q 108,288 112,242 Q 126,236 140,238 Z"/>
+
+            <!-- ADDUCTORS -->
+            <path class="mz" data-g="adductors" onclick="sm('adductors')"
+              d="M 90,242 L 110,242 L 108,318 Q 100,322 92,318 Z"/>
+
+            <!-- CALVES front (tibialis) -->
+            <path class="mz" data-g="calves" onclick="sm('calves')"
+              d="M 60,346 Q 52,390 60,436 L 84,436 Q 88,390 84,346 Q 72,342 60,346 Z"/>
+            <path class="mz" data-g="calves" onclick="sm('calves')"
+              d="M 140,346 Q 148,390 140,436 L 116,436 Q 112,390 116,346 Q 128,342 140,346 Z"/>
+          </g>
+
+          <!-- ═══ BACK ═══ -->
+          <g id="backView" style="display:none">
+            <g class="body-line">
+              <ellipse cx="100" cy="32" rx="22" ry="26"/>
+              <path d="M 88,56 L 112,56 L 114,72 L 86,72 Z"/>
+              <path d="M 60,76 Q 50,82 44,98 L 30,118 Q 24,150 26,180 L 32,210 Q 38,222 44,228
+                       L 50,240 Q 46,260 48,290 L 52,330 Q 54,360 58,400 L 62,440 Q 64,455 72,458
+                       L 86,458 Q 92,452 92,440 L 90,400 Q 92,360 96,320 L 100,290
+                       Q 104,320 106,360 L 108,400 L 108,440 Q 108,452 114,458
+                       L 128,458 Q 136,455 138,440 L 142,400 Q 146,360 148,330 L 152,290
+                       Q 154,260 150,240 L 156,228 Q 162,222 168,210 L 174,180
+                       Q 176,150 170,118 L 156,98 Q 150,82 140,76 Z"/>
+              <path d="M 22,232 Q 16,244 20,254 Q 28,256 32,250 L 32,232 Z"/>
+              <path d="M 178,232 Q 184,244 180,254 Q 172,256 168,250 L 168,232 Z"/>
+              <path d="M 56,458 Q 50,464 56,468 L 84,468 Q 88,464 86,458 Z"/>
+              <path d="M 116,458 Q 114,464 116,468 L 144,468 Q 150,464 144,458 Z"/>
+            </g>
+
+            <!-- TRAPS — large diamond from neck -->
+            <path class="mz" data-g="traps" onclick="sm('traps')"
+              d="M 88,72 L 112,72 Q 130,80 140,98 Q 120,108 100,106 Q 80,108 60,98 Q 70,80 88,72 Z"/>
+
+            <!-- DELTOIDS rear -->
+            <path class="mz" data-g="shoulders" onclick="sm('shoulders')"
+              d="M 60,82 Q 44,88 36,108 Q 32,122 38,132 Q 50,130 58,118 Q 64,100 60,82 Z"/>
+            <path class="mz" data-g="shoulders" onclick="sm('shoulders')"
+              d="M 140,82 Q 156,88 164,108 Q 168,122 162,132 Q 150,130 142,118 Q 136,100 140,82 Z"/>
+
+            <!-- LATS — V wings -->
+            <path class="mz" data-g="lats" onclick="sm('lats')"
+              d="M 60,108 Q 52,150 58,190 Q 78,200 96,180 L 96,118 Q 78,108 60,108 Z"/>
+            <path class="mz" data-g="lats" onclick="sm('lats')"
+              d="M 140,108 Q 148,150 142,190 Q 122,200 104,180 L 104,118 Q 122,108 140,108 Z"/>
+
+            <!-- UPPER BACK / RHOMBOIDS center -->
+            <path class="mz" data-g="upperback" onclick="sm('upperback')"
+              d="M 96,108 L 104,108 L 104,180 Q 100,184 96,180 Z"/>
+
+            <!-- LOWER BACK / ERECTORS -->
+            <path class="mz" data-g="lowerback" onclick="sm('lowerback')"
+              d="M 86,190 L 114,190 Q 116,210 110,228 L 90,228 Q 84,210 86,190 Z"/>
+
+            <!-- TRICEPS -->
+            <path class="mz" data-g="triceps" onclick="sm('triceps')"
+              d="M 36,128 Q 28,150 32,170 Q 42,174 50,170 Q 52,150 50,128 Q 42,124 36,128 Z"/>
+            <path class="mz" data-g="triceps" onclick="sm('triceps')"
+              d="M 164,128 Q 172,150 168,170 Q 158,174 150,170 Q 148,150 150,128 Q 158,124 164,128 Z"/>
+
+            <!-- FOREARMS back -->
+            <path class="mz" data-g="forearms" onclick="sm('forearms')"
+              d="M 32,172 Q 24,196 28,226 Q 38,230 44,226 Q 48,196 46,172 Q 38,168 32,172 Z"/>
+            <path class="mz" data-g="forearms" onclick="sm('forearms')"
+              d="M 168,172 Q 176,196 172,226 Q 162,230 156,226 Q 152,196 154,172 Q 162,168 168,172 Z"/>
+
+            <!-- GLUTES -->
+            <path class="mz" data-g="glutes" onclick="sm('glutes')"
+              d="M 60,228 Q 50,250 58,278 Q 78,288 98,280 L 98,232 Q 78,224 60,228 Z"/>
+            <path class="mz" data-g="glutes" onclick="sm('glutes')"
+              d="M 140,228 Q 150,250 142,278 Q 122,288 102,280 L 102,232 Q 122,224 140,228 Z"/>
+
+            <!-- HAMSTRINGS -->
+            <path class="mz" data-g="hamstrings" onclick="sm('hamstrings')"
+              d="M 60,288 Q 52,330 60,338 Q 74,344 86,338 Q 90,300 88,290 Q 74,284 60,288 Z"/>
+            <path class="mz" data-g="hamstrings" onclick="sm('hamstrings')"
+              d="M 140,288 Q 148,330 140,338 Q 126,344 114,338 Q 110,300 112,290 Q 126,284 140,288 Z"/>
+
+            <!-- CALVES back gastroc -->
+            <path class="mz" data-g="calves" onclick="sm('calves')"
+              d="M 60,348 Q 50,390 62,432 Q 72,438 84,432 Q 90,388 84,348 Q 72,344 60,348 Z"/>
+            <path class="mz" data-g="calves" onclick="sm('calves')"
+              d="M 140,348 Q 150,390 138,432 Q 128,438 116,432 Q 110,388 116,348 Q 128,344 140,348 Z"/>
+          </g>
+
+        </svg>
+      </div>
+
+      <div class="grid-title" id="gridTitle">Группы мышц</div>
+      <div class="mgrid" id="mgrid"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════ PROFILE ═══════════ -->
+  <div class="view" id="v-me">
+    <div class="hdr"><div><h1>Я</h1><div class="sub">Личный профиль</div></div></div>
+
+    <div class="profile-hdr">
+      <div class="avatar" id="avatarBox">👤</div>
+      <div>
+        <div style="font-size:18px;font-weight:700" id="hdrName">Твой профиль</div>
+        <div style="font-size:13px;color:var(--muted)">Заполни данные</div>
       </div>
     </div>
+
+    <div class="sec">
+      <h2>Основное</h2>
+      <div class="field">
+        <label>Имя</label>
+        <input id="p-name" placeholder="Иван"/>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Возраст</label><input id="p-age" type="number" placeholder="25"/></div>
+        <div class="field"><label>Рост, см</label><input id="p-height" type="number" placeholder="180"/></div>
+      </div>
+      <div class="field"><label>Вес, кг</label><input id="p-weight" type="number" placeholder="75"/></div>
+    </div>
+
+    <div class="sec">
+      <h2>Фото</h2>
+      <div class="photos">
+        <label class="photo" id="ph-front-l"><span>📷</span>Спереди<input type="file" accept="image/*" data-k="front" onchange="onPhoto(event)"/></label>
+        <label class="photo" id="ph-side-l"><span>📷</span>Сбоку<input type="file" accept="image/*" data-k="side" onchange="onPhoto(event)"/></label>
+        <label class="photo" id="ph-back-l"><span>📷</span>Сзади<input type="file" accept="image/*" data-k="back" onchange="onPhoto(event)"/></label>
+      </div>
+    </div>
+
+    <div class="sec">
+      <h2>Параметры тела, см</h2>
+      <div class="row2">
+        <div class="field"><label>Грудь</label><input id="m-chest" type="number" placeholder="100"/></div>
+        <div class="field"><label>Талия (узкая)</label><input id="m-waist" type="number" placeholder="80"/></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Бёдра</label><input id="m-hips" type="number" placeholder="100"/></div>
+        <div class="field"><label>Бицепс</label><input id="m-bicep" type="number" placeholder="35"/></div>
+      </div>
+      <div class="field"><label>Ляжка</label><input id="m-thigh" type="number" placeholder="55"/></div>
+    </div>
+
+    <button class="btn" onclick="saveProfile()">Сохранить</button>
   </div>
 
-  <!-- CHIP LIST -->
-  <div class="chips" id="ch"></div>
+  <!-- ═══════════ TAB BAR ═══════════ -->
+  <nav class="tabbar">
+    <button class="tab" data-t="home" onclick="tab('home')">
+      <svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7h-6v7H4a1 1 0 0 1-1-1z"/></svg>
+      Главная
+    </button>
+    <button class="tab" data-t="food" onclick="tab('food')">
+      <svg viewBox="0 0 24 24"><path d="M12 3c4 0 7 4 7 9s-3 9-7 9-7-4-7-9 3-9 7-9z"/><path d="M12 3c-1 2-1 4 0 6"/></svg>
+      Питание
+    </button>
+    <button class="tab on" data-t="lib" onclick="tab('lib')">
+      <svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h3v18H6a2 2 0 0 1-2-2z"/><path d="M10 3h4v18h-4z"/><path d="M15 5l3-1 3 16-3 1z"/></svg>
+      Библиотека
+    </button>
+    <button class="tab" data-t="me" onclick="tab('me')">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>
+      Я
+    </button>
+  </nav>
+</div>
+
+<!-- BOTTOM SHEET -->
+<div class="sheet-bg" id="sheetBg" onclick="closeSheet()"></div>
+<div class="sheet" id="sheet">
+  <div class="sheet-grab"></div>
+  <div id="sheetBody"></div>
 </div>
 
 <script>
+/* ════════ DATA ════════ */
 const M = {
-  chest:     { name:'Грудные',          syn:['shoulders','triceps'],      ant:['upperback','lats'], v:['front'],
-    vids:[
-      {t:'Жим штанги лёжа',              u:'https://t.me/c/YOUR_CHANNEL/1'},
-      {t:'Жим гантелей на наклонной',    u:'https://t.me/c/YOUR_CHANNEL/2'},
-      {t:'Разводка гантелей',            u:'https://t.me/c/YOUR_CHANNEL/3'},
-      {t:'Сведение в кроссовере',        u:'https://t.me/c/YOUR_CHANNEL/4'},
+  chest:     { name:'Грудные', cat:'Верх тела', icon:'💪', syn:['shoulders','triceps'], v:['front'],
+    parts:[
+      { name:'Верхняя часть', vids:[
+        {t:'Жим штанги на наклонной',    u:'https://t.me/c/YOUR_CHANNEL/1'},
+        {t:'Жим гантелей на наклонной',  u:'https://t.me/c/YOUR_CHANNEL/2'},
+        {t:'Сведение на наклонной',      u:'https://t.me/c/YOUR_CHANNEL/3'},
+      ]},
+      { name:'Середина', vids:[
+        {t:'Жим штанги лёжа',            u:'https://t.me/c/YOUR_CHANNEL/4'},
+        {t:'Разводка гантелей лёжа',     u:'https://t.me/c/YOUR_CHANNEL/5'},
+        {t:'Сведение в кроссовере',      u:'https://t.me/c/YOUR_CHANNEL/6'},
+      ]},
+      { name:'Нижняя часть', vids:[
+        {t:'Отжимания на брусьях',       u:'https://t.me/c/YOUR_CHANNEL/7'},
+        {t:'Жим на обратной наклонной',  u:'https://t.me/c/YOUR_CHANNEL/8'},
+        {t:'Кроссовер сверху-вниз',      u:'https://t.me/c/YOUR_CHANNEL/9'},
+      ]},
     ]},
-  upperback: { name:'Верх спины',       syn:['lats','biceps'],            ant:['chest'], v:['back'],
-    vids:[
-      {t:'Тяга штанги в наклоне',        u:'https://t.me/c/YOUR_CHANNEL/5'},
-      {t:'Тяга гантели одной рукой',     u:'https://t.me/c/YOUR_CHANNEL/6'},
-      {t:'Тяга горизонтального блока',   u:'https://t.me/c/YOUR_CHANNEL/7'},
+  shoulders: { name:'Плечи', cat:'Верх тела', icon:'🏋️', syn:['chest','triceps'], v:['front','back'],
+    parts:[
+      { name:'Передний пучок', vids:[
+        {t:'Жим штанги стоя',            u:'https://t.me/c/YOUR_CHANNEL/14'},
+        {t:'Жим гантелей сидя',          u:'https://t.me/c/YOUR_CHANNEL/15'},
+        {t:'Подъём гантелей перед собой',u:'https://t.me/c/YOUR_CHANNEL/16'},
+      ]},
+      { name:'Средний пучок', vids:[
+        {t:'Разводка гантелей в стороны',u:'https://t.me/c/YOUR_CHANNEL/17'},
+        {t:'Тяга к подбородку',          u:'https://t.me/c/YOUR_CHANNEL/18'},
+        {t:'Махи в стороны на блоке',    u:'https://t.me/c/YOUR_CHANNEL/19'},
+      ]},
+      { name:'Задний пучок', vids:[
+        {t:'Разводка в наклоне',         u:'https://t.me/c/YOUR_CHANNEL/20'},
+        {t:'Обратные разведения',        u:'https://t.me/c/YOUR_CHANNEL/21'},
+        {t:'Тяга к лицу',                u:'https://t.me/c/YOUR_CHANNEL/22'},
+      ]},
     ]},
-  lats:      { name:'Широчайшие',       syn:['biceps','upperback'],       ant:['chest','shoulders'], v:['back'],
+  biceps:    { name:'Бицепс', cat:'Руки', icon:'💪', syn:['forearms','lats'], v:['front'],
     vids:[
-      {t:'Подтягивания широким хватом',  u:'https://t.me/c/YOUR_CHANNEL/8'},
-      {t:'Тяга верхнего блока',          u:'https://t.me/c/YOUR_CHANNEL/9'},
-      {t:'Пуловер с гантелью',           u:'https://t.me/c/YOUR_CHANNEL/10'},
+      {t:'Сгибание со штангой стоя',     u:'https://t.me/c/YOUR_CHANNEL/30'},
+      {t:'Молотковые сгибания',          u:'https://t.me/c/YOUR_CHANNEL/31'},
+      {t:'Концентрированное сгибание',   u:'https://t.me/c/YOUR_CHANNEL/32'},
     ]},
-  traps:     { name:'Трапеции',         syn:['shoulders','upperback'],    ant:[], v:['back'],
+  triceps:   { name:'Трицепс', cat:'Руки', icon:'💪', syn:['shoulders','chest'], v:['back'],
     vids:[
-      {t:'Шраги со штангой',             u:'https://t.me/c/YOUR_CHANNEL/11'},
-      {t:'Шраги с гантелями',            u:'https://t.me/c/YOUR_CHANNEL/12'},
-      {t:'Тяга к подбородку',            u:'https://t.me/c/YOUR_CHANNEL/13'},
+      {t:'Жим узким хватом',             u:'https://t.me/c/YOUR_CHANNEL/40'},
+      {t:'Французский жим',              u:'https://t.me/c/YOUR_CHANNEL/41'},
+      {t:'Разгибание на блоке',          u:'https://t.me/c/YOUR_CHANNEL/42'},
     ]},
-  shoulders: { name:'Плечи',            syn:['chest','triceps'],          ant:['lats'], v:['front','back'],
+  forearms:  { name:'Предплечья', cat:'Руки', icon:'✊', syn:['biceps'], v:['front','back'],
     vids:[
-      {t:'Жим гантелей сидя',            u:'https://t.me/c/YOUR_CHANNEL/14'},
-      {t:'Разводка в стороны',           u:'https://t.me/c/YOUR_CHANNEL/15'},
-      {t:'Жим штанги стоя',              u:'https://t.me/c/YOUR_CHANNEL/16'},
-      {t:'Разводка в наклоне',           u:'https://t.me/c/YOUR_CHANNEL/17'},
+      {t:'Сгибание кисти со штангой',    u:'https://t.me/c/YOUR_CHANNEL/50'},
+      {t:'Обратное сгибание запястья',   u:'https://t.me/c/YOUR_CHANNEL/51'},
     ]},
-  biceps:    { name:'Бицепс',           syn:['forearms','lats'],          ant:['triceps'], v:['front'],
+  upperback: { name:'Верх спины', cat:'Спина', icon:'🦅', syn:['lats','biceps'], v:['back'],
     vids:[
-      {t:'Сгибание со штангой стоя',     u:'https://t.me/c/YOUR_CHANNEL/18'},
-      {t:'Молотковые сгибания',          u:'https://t.me/c/YOUR_CHANNEL/19'},
-      {t:'Концентрированное сгибание',   u:'https://t.me/c/YOUR_CHANNEL/20'},
+      {t:'Тяга штанги в наклоне',        u:'https://t.me/c/YOUR_CHANNEL/60'},
+      {t:'Тяга гантели одной рукой',     u:'https://t.me/c/YOUR_CHANNEL/61'},
+      {t:'Тяга горизонтального блока',   u:'https://t.me/c/YOUR_CHANNEL/62'},
     ]},
-  triceps:   { name:'Трицепс',          syn:['shoulders','chest'],        ant:['biceps'], v:['back'],
+  lats:      { name:'Широчайшие', cat:'Спина', icon:'🦅', syn:['biceps','upperback'], v:['back'],
     vids:[
-      {t:'Жим узким хватом',             u:'https://t.me/c/YOUR_CHANNEL/21'},
-      {t:'Французский жим',              u:'https://t.me/c/YOUR_CHANNEL/22'},
-      {t:'Разгибание на блоке',          u:'https://t.me/c/YOUR_CHANNEL/23'},
+      {t:'Подтягивания широким хватом',  u:'https://t.me/c/YOUR_CHANNEL/70'},
+      {t:'Тяга верхнего блока',          u:'https://t.me/c/YOUR_CHANNEL/71'},
+      {t:'Пуловер с гантелью',           u:'https://t.me/c/YOUR_CHANNEL/72'},
     ]},
-  forearms:  { name:'Предплечья',       syn:['biceps'],                   ant:[], v:['front','back'],
+  traps:     { name:'Трапеции', cat:'Спина', icon:'🦅', syn:['shoulders','upperback'], v:['back'],
     vids:[
-      {t:'Сгибание кисти со штангой',    u:'https://t.me/c/YOUR_CHANNEL/24'},
-      {t:'Обратное сгибание запястья',   u:'https://t.me/c/YOUR_CHANNEL/25'},
+      {t:'Шраги со штангой',             u:'https://t.me/c/YOUR_CHANNEL/80'},
+      {t:'Шраги с гантелями',            u:'https://t.me/c/YOUR_CHANNEL/81'},
+      {t:'Тяга к подбородку',            u:'https://t.me/c/YOUR_CHANNEL/82'},
     ]},
-  core:      { name:'Кор / пресс',      syn:['lats'],                     ant:[], v:['front'],
+  lowerback: { name:'Поясница', cat:'Спина', icon:'🦅', syn:['glutes','hamstrings'], v:['back'],
     vids:[
-      {t:'Скручивания',                  u:'https://t.me/c/YOUR_CHANNEL/26'},
-      {t:'Планка',                       u:'https://t.me/c/YOUR_CHANNEL/27'},
-      {t:'Подъём ног в висе',            u:'https://t.me/c/YOUR_CHANNEL/28'},
-      {t:'Ролик для пресса',             u:'https://t.me/c/YOUR_CHANNEL/29'},
+      {t:'Гиперэкстензия',               u:'https://t.me/c/YOUR_CHANNEL/90'},
+      {t:'Становая тяга',                u:'https://t.me/c/YOUR_CHANNEL/91'},
+      {t:'Доброе утро со штангой',       u:'https://t.me/c/YOUR_CHANNEL/92'},
     ]},
-  quads:     { name:'Квадрицепс',       syn:['glutes','calves'],          ant:['hamstrings'], v:['front'],
+  core:      { name:'Пресс', cat:'Корпус', icon:'🔥', syn:['lats'], v:['front'],
     vids:[
-      {t:'Приседание со штангой',        u:'https://t.me/c/YOUR_CHANNEL/30'},
-      {t:'Жим ногами',                   u:'https://t.me/c/YOUR_CHANNEL/31'},
-      {t:'Разгибание ног в тренажёре',   u:'https://t.me/c/YOUR_CHANNEL/32'},
-      {t:'Выпады',                       u:'https://t.me/c/YOUR_CHANNEL/33'},
+      {t:'Скручивания',                  u:'https://t.me/c/YOUR_CHANNEL/100'},
+      {t:'Планка',                       u:'https://t.me/c/YOUR_CHANNEL/101'},
+      {t:'Подъём ног в висе',            u:'https://t.me/c/YOUR_CHANNEL/102'},
+      {t:'Ролик для пресса',             u:'https://t.me/c/YOUR_CHANNEL/103'},
     ]},
-  hamstrings:{ name:'Бицепс бедра',     syn:['glutes'],                   ant:['quads'], v:['back'],
+  quads:     { name:'Квадрицепс', cat:'Ноги', icon:'🦵', syn:['glutes','calves'], v:['front'],
     vids:[
-      {t:'Становая тяга на прямых ногах',u:'https://t.me/c/YOUR_CHANNEL/34'},
-      {t:'Сгибание ног в тренажёре',     u:'https://t.me/c/YOUR_CHANNEL/35'},
-      {t:'Мёртвая тяга с гантелями',     u:'https://t.me/c/YOUR_CHANNEL/36'},
+      {t:'Приседание со штангой',        u:'https://t.me/c/YOUR_CHANNEL/110'},
+      {t:'Жим ногами',                   u:'https://t.me/c/YOUR_CHANNEL/111'},
+      {t:'Разгибание ног в тренажёре',   u:'https://t.me/c/YOUR_CHANNEL/112'},
+      {t:'Выпады',                       u:'https://t.me/c/YOUR_CHANNEL/113'},
     ]},
-  glutes:    { name:'Ягодичные',        syn:['hamstrings','quads'],       ant:[], v:['back'],
+  hamstrings:{ name:'Бицепс бедра', cat:'Ноги', icon:'🦵', syn:['glutes'], v:['back'],
     vids:[
-      {t:'Ягодичный мостик',             u:'https://t.me/c/YOUR_CHANNEL/37'},
-      {t:'Становая тяга сумо',           u:'https://t.me/c/YOUR_CHANNEL/38'},
-      {t:'Отведение ноги в блоке',       u:'https://t.me/c/YOUR_CHANNEL/39'},
+      {t:'Становая на прямых ногах',     u:'https://t.me/c/YOUR_CHANNEL/120'},
+      {t:'Сгибание ног в тренажёре',     u:'https://t.me/c/YOUR_CHANNEL/121'},
+      {t:'Мёртвая тяга с гантелями',     u:'https://t.me/c/YOUR_CHANNEL/122'},
     ]},
-  calves:    { name:'Икроножные',       syn:['quads'],                    ant:[], v:['front','back'],
-    vids:[
-      {t:'Подъём на носки стоя',         u:'https://t.me/c/YOUR_CHANNEL/40'},
-      {t:'Подъём на носки сидя',         u:'https://t.me/c/YOUR_CHANNEL/41'},
+  glutes:    { name:'Ягодичные', cat:'Ноги', icon:'🍑', syn:['hamstrings','quads'], v:['back'],
+    parts:[
+      { name:'Большая ягодичная', vids:[
+        {t:'Ягодичный мостик со штангой',u:'https://t.me/c/YOUR_CHANNEL/130'},
+        {t:'Становая тяга сумо',         u:'https://t.me/c/YOUR_CHANNEL/131'},
+        {t:'Приседание со штангой',      u:'https://t.me/c/YOUR_CHANNEL/132'},
+        {t:'Болгарский сплит-присед',    u:'https://t.me/c/YOUR_CHANNEL/133'},
+      ]},
+      { name:'Верх (средняя и малая)', vids:[
+        {t:'Отведение ноги в блоке',     u:'https://t.me/c/YOUR_CHANNEL/134'},
+        {t:'Боковые отведения с резинкой',u:'https://t.me/c/YOUR_CHANNEL/135'},
+        {t:'Боковая планка с подъёмом',  u:'https://t.me/c/YOUR_CHANNEL/136'},
+      ]},
     ]},
-  adductors: { name:'Приводящие',       syn:['quads','glutes'],           ant:[], v:['front'],
+  calves:    { name:'Икроножные', cat:'Ноги', icon:'🦵', syn:['quads'], v:['front','back'],
     vids:[
-      {t:'Сведение ног в тренажёре',     u:'https://t.me/c/YOUR_CHANNEL/42'},
-      {t:'Приседание сумо',              u:'https://t.me/c/YOUR_CHANNEL/43'},
+      {t:'Подъём на носки стоя',         u:'https://t.me/c/YOUR_CHANNEL/140'},
+      {t:'Подъём на носки сидя',         u:'https://t.me/c/YOUR_CHANNEL/141'},
+    ]},
+  adductors: { name:'Приводящие', cat:'Ноги', icon:'🦵', syn:['quads','glutes'], v:['front'],
+    vids:[
+      {t:'Сведение ног в тренажёре',     u:'https://t.me/c/YOUR_CHANNEL/150'},
+      {t:'Приседание сумо',              u:'https://t.me/c/YOUR_CHANNEL/151'},
     ]},
 };
 
-const FRONT_CHIPS = ['chest','shoulders','biceps','triceps','forearms','core','quads','adductors','calves'];
-const BACK_CHIPS  = ['traps','upperback','lats','shoulders','triceps','forearms','glutes','hamstrings','calves'];
+const FRONT_LIST = ['chest','shoulders','biceps','forearms','core','quads','adductors','calves'];
+const BACK_LIST  = ['traps','upperback','lats','lowerback','shoulders','triceps','forearms','glutes','hamstrings','calves'];
 
-let cv = 'front', sel = null;
+let cv='front', sel=null;
+let favs = new Set(JSON.parse(localStorage.getItem('favs')||'[]'));
 
-function sv(v) {
-  cv = v;
-  document.getElementById('bf').className = v==='front' ? 'on' : '';
-  document.getElementById('bb').className = v==='back'  ? 'on' : '';
-  document.getElementById('fz').style.display = v==='front' ? '' : 'none';
-  document.getElementById('bz').style.display = v==='back'  ? '' : 'none';
-  if (sel && !M[sel].v.includes(v)) { sel = null; renderPanel(); }
-  rc(); upd();
+/* ════════ TABS ════════ */
+function tab(t){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
+  document.getElementById('v-'+t).classList.add('on');
+  document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
+  hap('selection');
 }
 
-function sm(k) {
-  sel = k;
-  if (!M[k].v.includes(cv)) { cv = M[k].v[0]; sv(cv); }
-  rc(); upd(); renderPanel();
+/* ════════ FIGURE ════════ */
+function sv(v){
+  cv=v;
+  document.getElementById('bf').className = v==='front'?'on':'';
+  document.getElementById('bb').className = v==='back'?'on':'';
+  document.getElementById('frontView').style.display = v==='front'?'':'none';
+  document.getElementById('backView').style.display  = v==='back' ?'':'none';
+  if (sel && !M[sel].v.includes(v)){ sel=null; }
+  rg(); upd();
 }
 
-function upd() {
-  document.querySelectorAll('.mz').forEach(e => {
-    const g = e.dataset.g;
-    if (!sel) { e.style.opacity = '0.45'; return; }
-    if (g === sel)                     { e.style.opacity = '1';    e.style.filter = 'brightness(1.1)'; }
-    else if (M[sel] && M[sel].syn.includes(g)) { e.style.opacity = '0.7'; e.style.filter = ''; }
-    else if (M[sel] && M[sel].ant.includes(g)) { e.style.opacity = '0.4'; e.style.filter = ''; }
-    else                               { e.style.opacity = '0.1'; e.style.filter = ''; }
+function sm(k){
+  sel = sel===k?null:k;
+  if (sel && !M[sel].v.includes(cv)){ cv=M[sel].v[0]; sv(cv); }
+  rg(); upd();
+  if (sel) openMuscle(sel);
+  hap('selection');
+}
+
+function upd(){
+  document.querySelectorAll('.mz').forEach(e=>{
+    const g=e.dataset.g;
+    e.classList.remove('act','syn','dim');
+    if (!sel) return;
+    if (g===sel) e.classList.add('act');
+    else if (M[sel].syn.includes(g)) e.classList.add('syn');
+    else e.classList.add('dim');
   });
 }
 
-function rc() {
-  const chips = cv === 'front' ? FRONT_CHIPS : BACK_CHIPS;
-  document.getElementById('ch').innerHTML = chips.map(k =>
-    `<span class="chip${sel===k?' active':''}" onclick="sm('${k}')">${M[k].name}</span>`
-  ).join('');
+/* ════════ GRID ════════ */
+function rg(){
+  const list = cv==='front'?FRONT_LIST:BACK_LIST;
+  document.getElementById('gridTitle').textContent = cv==='front'?'Группы спереди':'Группы сзади';
+  document.getElementById('mgrid').innerHTML = list.map(k=>{
+    const m = M[k];
+    return `<div class="mcard${sel===k?' active':''}" onclick="sm('${k}')">
+      <span class="ic">${m.icon}</span>${m.name}</div>`;
+  }).join('');
 }
 
-function renderPanel() {
-  if (!sel) {
-    document.getElementById('ip').innerHTML = `<div class="panel-idle"><p>Нажми на мышцу<br>на схеме или<br>выбери из списка</p></div>`;
-    return;
-  }
-  const m = M[sel];
-  const synLabels = m.syn.map(k => `<span class="tag tag-syn">${M[k]?.name||k}</span>`).join('');
-  const antLabels = m.ant.map(k => `<span class="tag tag-ant">${M[k]?.name||k}</span>`).join('');
-  const legend = [
-    m.syn.length ? '🟦 синергисты' : '',
-    m.ant.length ? '🟥 антагонисты' : '',
-  ].filter(Boolean).join('  ');
-
-  document.getElementById('ip').innerHTML = `
-    <p class="muscle-name">${m.name}</p>
+/* ════════ SHEET ════════ */
+function openMuscle(k){
+  const m = M[k];
+  const synLabel = m.syn?.length
+    ? `<span class="tag tag-syn">помогают: ${m.syn.map(s=>M[s]?.name||s).join(', ')}</span>` : '';
+  const parts = m.parts || [{ name:null, vids:m.vids||[] }];
+  const partsHTML = parts.map(p=>`
+    ${p.name ? `<p class="vsec">${p.name} · ${p.vids.length}</p>` : `<p class="vsec">Упражнения · ${p.vids.length}</p>`}
+    ${p.vids.map((v,i)=>viRow(v,i)).join('')}
+  `).join('');
+  document.getElementById('sheetBody').innerHTML = `
+    <div class="muscle-cat">${m.cat}</div>
+    <div class="muscle-name">${m.name}</div>
     <div class="tags">
-      <span class="tag tag-main">основная</span>
-      ${synLabels}${antLabels}
+      <span class="tag tag-main">основная</span>${synLabel}
     </div>
-    ${legend ? `<p class="legend">${legend}</p>` : ''}
-    <div class="vlist">
-      <p class="vsec">Упражнения</p>
-      ${m.vids.map((v,i) => `
-        <a class="vi" href="${v.u}" target="_blank">
-          <div class="vico">${i+1}</div>
-          <span class="vt">${v.t}</span>
-        </a>`).join('')}
-    </div>`;
+    ${partsHTML}`;
+  showSheet();
 }
 
-if (window.Telegram && window.Telegram.WebApp) {
-  Telegram.WebApp.ready();
-  Telegram.WebApp.expand();
+function viRow(v,i){
+  const fav = favs.has(v.u);
+  return `<div class="vi">
+    <a class="vico" href="${v.u}" target="_blank">${i+1}</a>
+    <a class="vt" href="${v.u}" target="_blank" style="text-decoration:none;color:inherit">${v.t}</a>
+    <span class="star${fav?' on':''}" onclick="toggleFav('${v.u}','${v.t.replace(/'/g,"\\'")}',this)">${fav?'★':'☆'}</span>
+  </div>`;
+}
+
+function showSheet(){
+  document.getElementById('sheetBg').classList.add('on');
+  document.getElementById('sheet').classList.add('on');
+}
+function closeSheet(){
+  document.getElementById('sheetBg').classList.remove('on');
+  document.getElementById('sheet').classList.remove('on');
+}
+
+/* ════════ FAVORITES ════════ */
+function toggleFav(u,t,el){
+  const map = JSON.parse(localStorage.getItem('favData')||'{}');
+  if (favs.has(u)){ favs.delete(u); delete map[u]; el.textContent='☆'; el.classList.remove('on'); }
+  else { favs.add(u); map[u]=t; el.textContent='★'; el.classList.add('on'); }
+  localStorage.setItem('favs', JSON.stringify([...favs]));
+  localStorage.setItem('favData', JSON.stringify(map));
+  hap('impact');
+}
+
+function openFavs(){
+  const map = JSON.parse(localStorage.getItem('favData')||'{}');
+  const items = Object.entries(map);
+  document.getElementById('sheetBody').innerHTML = `
+    <div class="muscle-cat">Сохранённое</div>
+    <div class="muscle-name">Избранное</div>
+    ${items.length===0
+      ? `<p style="color:var(--muted);font-size:13px;text-align:center;padding:30px 0">Пока пусто. Добавь упражнения, нажав звёздочку.</p>`
+      : items.map(([u,t],i)=>viRow({u,t},i)).join('')}`;
+  showSheet();
+}
+
+/* ════════ SEARCH ════════ */
+function onSearch(){
+  const q = document.getElementById('srch').value.trim().toLowerCase();
+  const r = document.getElementById('srResults');
+  const main = document.getElementById('libMain');
+  if (!q){ r.style.display='none'; main.style.display=''; return; }
+  main.style.display='none'; r.style.display='';
+  const found = [];
+  Object.entries(M).forEach(([k,m])=>{
+    const parts = m.parts || [{ name:null, vids:m.vids||[] }];
+    parts.forEach(p=>p.vids.forEach(v=>{
+      if (v.t.toLowerCase().includes(q)) found.push({...v, m:m.name});
+    }));
+  });
+  r.innerHTML = found.length===0
+    ? `<div class="sr-empty">Ничего не найдено</div>`
+    : `<div class="sec"><h2>Найдено: ${found.length}</h2>${found.map((v,i)=>`
+        <div class="vi">
+          <a class="vico" href="${v.u}" target="_blank">${i+1}</a>
+          <div style="flex:1">
+            <a class="vt" href="${v.u}" target="_blank" style="display:block;text-decoration:none;color:inherit">${v.t}</a>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">${v.m}</div>
+          </div>
+          <span class="star${favs.has(v.u)?' on':''}" onclick="toggleFav('${v.u}','${v.t.replace(/'/g,"\\'")}',this)">${favs.has(v.u)?'★':'☆'}</span>
+        </div>`).join('')}</div>`;
+}
+
+/* ════════ PROFILE ════════ */
+function loadProfile(){
+  const p = JSON.parse(localStorage.getItem('profile')||'{}');
+  ['name','age','height','weight'].forEach(k=>{ if(p[k]) document.getElementById('p-'+k).value=p[k]; });
+  ['chest','waist','hips','bicep','thigh'].forEach(k=>{ if(p[k]) document.getElementById('m-'+k).value=p[k]; });
+  if (p.name){ document.getElementById('hdrName').textContent=p.name; document.getElementById('avatarBox').textContent=p.name[0].toUpperCase(); }
+  ['front','side','back'].forEach(k=>{
+    if (p['photo_'+k]){
+      const lbl = document.getElementById('ph-'+k+'-l');
+      lbl.innerHTML = `<img src="${p['photo_'+k]}"/><input type="file" accept="image/*" data-k="${k}" onchange="onPhoto(event)"/>`;
+    }
+  });
+}
+function saveProfile(){
+  const p = JSON.parse(localStorage.getItem('profile')||'{}');
+  ['name','age','height','weight'].forEach(k=>p[k]=document.getElementById('p-'+k).value);
+  ['chest','waist','hips','bicep','thigh'].forEach(k=>p[k]=document.getElementById('m-'+k).value);
+  localStorage.setItem('profile',JSON.stringify(p));
+  loadProfile();
+  hap('success');
+  if (window.Telegram?.WebApp?.showAlert) Telegram.WebApp.showAlert('Сохранено ✓');
+}
+function onPhoto(e){
+  const f = e.target.files[0]; if(!f) return;
+  const k = e.target.dataset.k;
+  const r = new FileReader();
+  r.onload = ()=>{
+    const p = JSON.parse(localStorage.getItem('profile')||'{}');
+    p['photo_'+k] = r.result;
+    localStorage.setItem('profile',JSON.stringify(p));
+    loadProfile();
+  };
+  r.readAsDataURL(f);
+}
+
+/* ════════ HELPERS ════════ */
+function hap(t){
+  const h = window.Telegram?.WebApp?.HapticFeedback;
+  if (!h) return;
+  if (t==='selection') h.selectionChanged();
+  else if (t==='success') h.notificationOccurred('success');
+  else h.impactOccurred('light');
+}
+
+if (window.Telegram?.WebApp){
+  Telegram.WebApp.ready(); Telegram.WebApp.expand();
+  Telegram.WebApp.setHeaderColor?.('secondary_bg_color');
 }
 
 sv('front');
+loadProfile();
 </script>
 </body>
 </html>
