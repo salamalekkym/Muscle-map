@@ -14,7 +14,7 @@
   --accent:#FF2D55; --accent-soft:#FFE5EC;
   --syn:#0A84FF; --syn-soft:#E5F1FF;
   --gold:#FFB800;
-  --muscle-fill:#f5f5f7; --muscle-stroke:#b8b8c0; --body-stroke:#3a3a44;
+  --muscle-fill:#e8eaf0; --muscle-stroke:#4a4a5a; --body-stroke:#4a4a5a;
 }
 @media (prefers-color-scheme: dark){
   :root{
@@ -22,7 +22,7 @@
     --hairline:rgba(255,255,255,.10); --hairline2:rgba(255,255,255,.18);
     --text:#fff; --text2:#ebebf5; --muted:#8e8e93;
     --accent-soft:rgba(255,45,85,.18); --syn-soft:rgba(10,132,255,.18);
-    --muscle-fill:#2c2c2e; --muscle-stroke:#48484a; --body-stroke:#8e8e93;
+    --muscle-fill:#3a3a4a; --muscle-stroke:#8888aa; --body-stroke:#8e8e93;
   }
 }
 html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text',system-ui,sans-serif;overflow:hidden;letter-spacing:-.01em}
@@ -179,221 +179,191 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
       </div>
 
       <div class="fig-card">
-        <svg id="bodySvg" viewBox="0 0 180 430" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <clipPath id="bodyClip">
-                <path d="M 90,5 C 104,5 113,14 113,26 C 113,38 106,45 98,47 L 102,56 110,62 126,68 140,74 148,84 150,98 146,112 L 152,162 156,208 160,218 150,222 142,216 138,198 132,176 132,210 128,232 124,322 128,328 130,400 122,412 110,414 107,400 103,396 L 90,396 77,396 73,400 70,414 58,412 50,400 52,328 56,322 52,232 48,210 48,176 42,198 38,216 30,222 20,218 24,208 28,162 L 34,112 30,98 32,84 40,74 54,68 70,62 78,56 82,47 C 74,45 67,38 67,26 C 67,14 76,5 90,5 Z"/>
-              </clipPath>
-            </defs>
+        <svg id="bodySvg" viewBox="0 0 220 560" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .body-outline { fill: #ffffff; stroke: #4a4a5a; stroke-width: 1.6; stroke-linejoin: round; stroke-linecap: round; }
+      .mz { cursor: pointer; fill: #e8eaf0; stroke: #4a4a5a; stroke-width: 1.2; stroke-linejoin: round; stroke-linecap: round; transition: fill .25s ease, opacity .25s ease; }
+      .mz.dim { opacity: .3; }
+      .mz.act { fill: #FF2D55; stroke: #FF2D55; }
+      .mz.syn { fill: #0A84FF; stroke: #0A84FF; opacity: .7; }
+      .detail { fill: none; stroke: #4a4a5a; stroke-width: 0.8; stroke-linecap: round; opacity: 0.6; pointer-events: none; }
+    </style>
+  </defs>
 
-            <!-- Body silhouette -->
-            <path d="M 90,5 C 104,5 113,14 113,26 C 113,38 106,45 98,47 L 102,56 110,62 126,68 140,74 148,84 150,98 146,112 L 152,162 156,208 160,218 150,222 142,216 138,198 132,176 132,210 128,232 124,322 128,328 130,400 122,412 110,414 107,400 103,396 L 90,396 77,396 73,400 70,414 58,412 50,400 52,328 56,322 52,232 48,210 48,176 42,198 38,216 30,222 20,218 24,208 28,162 L 34,112 30,98 32,84 40,74 54,68 70,62 78,56 82,47 C 74,45 67,38 67,26 C 67,14 76,5 90,5 Z" fill="#ebebf3" stroke="#9898b8" stroke-width="1.4" fill-opacity="1"/>
+  <!-- FRONT VIEW -->
+  <g id="frontView">
+    <!-- Body silhouette -->
+    <path class="body-outline" d="M 110,10 C 122,10 131,19 131,31 C 131,39 127,46 120,50 L 122,56 124,60 128,64 C 138,68 148,74 154,82 C 160,90 162,102 160,114 L 157,130 160,148 162,172 164,200 L 168,214 162,220 156,216 152,202 148,186 L 146,210 144,234 142,298 144,320 L 146,380 144,414 140,430 C 136,442 126,446 118,444 C 112,442 108,436 108,430 L 108,420 107,410 L 110,380 110,320 109,298 C 108,280 110,260 110,260 C 110,260 112,280 113,298 L 112,320 112,380 114,410 113,420 L 113,430 C 113,436 117,442 123,444 C 131,446 141,442 144,430 L 142,414 140,380 L 142,320 140,298 138,234 136,210 L 132,186 128,202 124,216 118,220 L 112,214 116,200 118,172 120,148 L 123,130 120,114 C 118,102 120,90 126,82 C 132,74 142,68 152,64 L 156,60 158,56 160,50 C 153,46 149,39 149,31 C 149,19 122,10 110,10 Z"/>
+    <!-- Head -->
+    <ellipse class="body-outline" cx="110" cy="30" rx="21" ry="25"/>
+    <!-- Left ear -->
+    <path class="body-outline" d="M 89,28 C 86,28 84,30 84,33 C 84,36 86,38 89,37"/>
+    <!-- Right ear -->
+    <path class="body-outline" d="M 131,28 C 134,28 136,30 136,33 C 136,36 134,38 131,37"/>
+    <!-- Neck V -->
+    <path class="body-outline" d="M 102,54 L 106,68 L 110,72 L 114,68 L 118,54"/>
+    <path class="body-outline" d="M 100,54 L 98,72 L 106,70"/>
+    <path class="body-outline" d="M 120,54 L 122,72 L 114,70"/>
+    <!-- Left Deltoid -->
+    <path class="mz" data-g="shoulders" onclick="sm('shoulders')" d="M 98,68 C 84,70 72,78 66,92 C 62,104 66,118 74,124 C 82,128 92,124 98,116 C 104,108 104,88 98,68 Z"/>
+    <!-- Right Deltoid -->
+    <path class="mz" data-g="shoulders" onclick="sm('shoulders')" d="M 122,68 C 136,70 148,78 154,92 C 158,104 154,118 146,124 C 138,128 128,124 122,116 C 116,108 116,88 122,68 Z"/>
+    <!-- Left Pec -->
+    <path class="mz" data-g="chest" onclick="sm('chest')" d="M 100,72 C 86,68 70,72 62,86 C 56,98 58,116 66,124 C 74,130 88,130 98,124 L 104,116 L 104,76 Z"/>
+    <!-- Right Pec -->
+    <path class="mz" data-g="chest" onclick="sm('chest')" d="M 120,72 C 134,68 150,72 158,86 C 164,98 162,116 154,124 C 146,130 132,130 122,124 L 116,116 L 116,76 Z"/>
+    <!-- Left Bicep -->
+    <path class="mz" data-g="biceps" onclick="sm('biceps')" d="M 66,122 C 60,136 58,156 62,172 C 68,176 78,174 82,168 C 86,158 86,136 80,122 Z"/>
+    <!-- Right Bicep -->
+    <path class="mz" data-g="biceps" onclick="sm('biceps')" d="M 154,122 C 160,136 162,156 158,172 C 152,176 142,174 138,168 C 134,158 134,136 140,122 Z"/>
+    <!-- Left Forearm -->
+    <path class="mz" data-g="forearms" onclick="sm('forearms')" d="M 60,174 C 54,192 52,212 56,230 C 62,234 72,232 76,226 C 80,214 80,192 76,174 Z"/>
+    <!-- Right Forearm -->
+    <path class="mz" data-g="forearms" onclick="sm('forearms')" d="M 160,174 C 166,192 168,212 164,230 C 158,234 148,232 144,226 C 140,214 140,192 144,174 Z"/>
+    <!-- Left hand fingers -->
+    <path class="body-outline" d="M 54,230 C 50,238 48,246 50,252 C 52,256 56,256 60,252 L 62,256 C 64,260 68,260 70,256 L 72,260 C 74,264 78,262 78,258 L 78,252 C 80,248 80,240 78,232"/>
+    <!-- Right hand fingers -->
+    <path class="body-outline" d="M 166,230 C 170,238 172,246 170,252 C 168,256 164,256 160,252 L 158,256 C 156,260 152,260 150,256 L 148,260 C 146,264 142,262 142,258 L 142,252 C 140,248 140,240 142,232"/>
+    <!-- Left Serratus -->
+    <path class="mz" data-g="core" onclick="sm('core')" d="M 66,122 C 60,132 58,148 62,162 C 68,166 76,162 80,154 C 84,144 82,130 76,122 Z"/>
+    <!-- Right Serratus -->
+    <path class="mz" data-g="core" onclick="sm('core')" d="M 154,122 C 160,132 162,148 158,162 C 152,166 144,162 140,154 C 136,144 138,130 144,122 Z"/>
+    <!-- Serratus lines left -->
+    <path class="detail" d="M 66,128 Q 72,130 74,136 M 64,138 Q 70,140 72,146 M 64,148 Q 70,150 72,156"/>
+    <!-- Serratus lines right -->
+    <path class="detail" d="M 154,128 Q 148,130 146,136 M 156,138 Q 150,140 148,146 M 156,148 Q 150,150 148,156"/>
+    <!-- Left Oblique -->
+    <path class="mz" data-g="core" onclick="sm('core')" d="M 80,128 C 74,148 72,172 76,192 C 84,198 94,194 98,186 L 100,164 L 98,128 Z"/>
+    <!-- Right Oblique -->
+    <path class="mz" data-g="core" onclick="sm('core')" d="M 140,128 C 146,148 148,172 144,192 C 136,198 126,194 122,186 L 120,164 L 122,128 Z"/>
+    <!-- Abs 3x2 -->
+    <rect class="mz" data-g="core" onclick="sm('core')" x="96" y="126" width="14" height="13" rx="3"/>
+    <rect class="mz" data-g="core" onclick="sm('core')" x="112" y="126" width="14" height="13" rx="3"/>
+    <rect class="mz" data-g="core" onclick="sm('core')" x="96" y="143" width="14" height="13" rx="3"/>
+    <rect class="mz" data-g="core" onclick="sm('core')" x="112" y="143" width="14" height="13" rx="3"/>
+    <rect class="mz" data-g="core" onclick="sm('core')" x="96" y="160" width="14" height="13" rx="3"/>
+    <rect class="mz" data-g="core" onclick="sm('core')" x="112" y="160" width="14" height="13" rx="3"/>
+    <!-- Lower abs shield -->
+    <path class="mz" data-g="core" onclick="sm('core')" d="M 98,176 L 122,176 C 124,188 122,200 116,208 L 110,212 L 104,208 C 98,200 96,188 98,176 Z"/>
+    <line class="detail" x1="110" y1="176" x2="110" y2="210"/>
+    <!-- Inguinal lines -->
+    <path class="detail" d="M 98,200 C 96,208 94,218 96,226 M 122,200 C 124,208 126,218 124,226"/>
+    <!-- Left Vastus Lateralis -->
+    <path class="mz" data-g="quads" onclick="sm('quads')" d="M 82,240 C 74,264 70,300 74,330 C 82,340 94,338 100,328 C 102,308 102,272 96,244 Z"/>
+    <!-- Left Rectus Femoris -->
+    <path class="mz" data-g="quads" onclick="sm('quads')" d="M 100,242 C 98,270 98,304 100,330 L 108,332 C 110,308 110,272 108,244 Z"/>
+    <!-- Left Vastus Medialis teardrop -->
+    <path class="mz" data-g="quads" onclick="sm('quads')" d="M 100,310 C 96,322 98,336 106,342 C 112,344 116,338 114,328 C 112,318 108,310 100,310 Z"/>
+    <!-- Right Vastus Lateralis -->
+    <path class="mz" data-g="quads" onclick="sm('quads')" d="M 138,240 C 146,264 150,300 146,330 C 138,340 126,338 120,328 C 118,308 118,272 124,244 Z"/>
+    <!-- Right Rectus Femoris -->
+    <path class="mz" data-g="quads" onclick="sm('quads')" d="M 120,242 C 122,270 122,304 120,330 L 112,332 C 110,308 110,272 112,244 Z"/>
+    <!-- Right Vastus Medialis teardrop -->
+    <path class="mz" data-g="quads" onclick="sm('quads')" d="M 120,310 C 124,322 122,336 114,342 C 108,344 104,338 106,328 C 108,318 112,310 120,310 Z"/>
+    <!-- Left Adductor -->
+    <path class="mz" data-g="adductors" onclick="sm('adductors')" d="M 102,236 C 100,264 100,298 102,326 L 110,328 C 110,300 110,266 108,238 Z"/>
+    <!-- Right Adductor -->
+    <path class="mz" data-g="adductors" onclick="sm('adductors')" d="M 118,236 C 120,264 120,298 118,326 L 110,328 C 110,300 110,266 112,238 Z"/>
+    <!-- Left Patella -->
+    <ellipse class="mz" data-g="quads" onclick="sm('quads')" cx="88" cy="346" rx="9" ry="7"/>
+    <!-- Right Patella -->
+    <ellipse class="mz" data-g="quads" onclick="sm('quads')" cx="132" cy="346" rx="9" ry="7"/>
+    <!-- Left Tibialis Anterior -->
+    <path class="mz" data-g="calves" onclick="sm('calves')" d="M 78,356 C 74,384 76,410 80,430 L 90,432 C 90,410 90,382 88,356 Z"/>
+    <!-- Left Peroneus -->
+    <path class="mz" data-g="calves" onclick="sm('calves')" d="M 72,358 C 68,382 68,410 72,430 L 80,432 C 78,410 76,384 76,358 Z"/>
+    <!-- Right Tibialis Anterior -->
+    <path class="mz" data-g="calves" onclick="sm('calves')" d="M 142,356 C 146,384 144,410 140,430 L 130,432 C 130,410 130,382 132,356 Z"/>
+    <!-- Right Peroneus -->
+    <path class="mz" data-g="calves" onclick="sm('calves')" d="M 148,358 C 152,382 152,410 148,430 L 140,432 C 142,410 144,384 144,358 Z"/>
+    <!-- Left foot -->
+    <path class="body-outline" d="M 74,436 C 68,440 64,446 66,452 L 68,456 C 70,460 78,460 86,458 L 90,454 L 90,436 Z"/>
+    <!-- Right foot -->
+    <path class="body-outline" d="M 146,436 C 152,440 156,446 154,452 L 152,456 C 150,460 142,460 134,458 L 130,454 L 130,436 Z"/>
+    <!-- Toes left -->
+    <path class="detail" d="M 66,452 Q 70,456 74,454 M 72,454 Q 74,458 78,456 M 78,456 Q 80,460 84,458"/>
+    <!-- Toes right -->
+    <path class="detail" d="M 154,452 Q 150,456 146,454 M 148,454 Q 146,458 142,456 M 142,456 Q 140,460 136,458"/>
+  </g>
 
-            <!-- Head -->
-            <ellipse cx="90" cy="25" rx="17" ry="20" fill="#ebebf3" stroke="#9898b8" stroke-width="1.2"/>
-            <!-- Ears -->
-            <ellipse cx="73" cy="26" rx="3" ry="5" fill="#ebebf3" stroke="#9898b8" stroke-width="0.8"/>
-            <ellipse cx="107" cy="26" rx="3" ry="5" fill="#ebebf3" stroke="#9898b8" stroke-width="0.8"/>
-            <!-- Neck -->
-            <path d="M 83,44 L 97,44 L 100,58 L 80,58 Z" fill="#ebebf3" stroke="#9898b8" stroke-width="0.9"/>
-            <!-- SCM neck lines -->
-            <g pointer-events="none" stroke="#9898b8" stroke-width="0.7" opacity="0.7" fill="none">
-              <path d="M 85,46 Q 83,52 82,57"/>
-              <path d="M 95,46 Q 97,52 98,57"/>
-            </g>
-
-            <!-- ══════ FRONT MUSCLES ══════ -->
-            <g id="frontView" clip-path="url(#bodyClip)">
-              <!-- Upper Traps (visible from front, shoulder mounds) -->
-              <path class="mz" data-g="traps" onclick="sm('traps')"
-                d="M 82,57 L 98,57 Q 114,63 126,72 Q 134,82 130,92 Q 114,84 90,86 Q 66,84 50,92 Q 46,82 54,72 Q 66,63 82,57 Z"/>
-
-              <!-- Left Deltoid -->
-              <path class="mz" data-g="shoulders" onclick="sm('shoulders')"
-                d="M 52,68 Q 34,72 26,90 Q 24,106 34,116 Q 46,120 56,110 Q 64,98 62,78 Z"/>
-              <!-- Right Deltoid -->
-              <path class="mz" data-g="shoulders" onclick="sm('shoulders')"
-                d="M 128,68 Q 146,72 154,90 Q 156,106 146,116 Q 134,120 124,110 Q 116,98 118,78 Z"/>
-
-              <!-- Left Pec -->
-              <path class="mz" data-g="chest" onclick="sm('chest')"
-                d="M 88,68 Q 60,62 46,78 Q 40,96 46,118 Q 58,128 78,124 L 88,120 Z"/>
-              <!-- Right Pec -->
-              <path class="mz" data-g="chest" onclick="sm('chest')"
-                d="M 92,68 Q 120,62 134,78 Q 140,96 134,118 Q 122,128 102,124 L 92,120 Z"/>
-
-              <!-- Left Bicep -->
-              <path class="mz" data-g="biceps" onclick="sm('biceps')"
-                d="M 27,114 Q 20,136 22,160 L 40,160 Q 47,134 46,114 Z"/>
-              <!-- Right Bicep -->
-              <path class="mz" data-g="biceps" onclick="sm('biceps')"
-                d="M 153,114 Q 160,136 158,160 L 140,160 Q 133,134 134,114 Z"/>
-
-              <!-- Left Forearm -->
-              <path class="mz" data-g="forearms" onclick="sm('forearms')"
-                d="M 22,162 Q 16,186 18,212 L 40,212 Q 44,186 42,162 Z"/>
-              <!-- Right Forearm -->
-              <path class="mz" data-g="forearms" onclick="sm('forearms')"
-                d="M 158,162 Q 164,186 162,212 L 140,212 Q 136,186 138,162 Z"/>
-
-              <!-- Left Oblique -->
-              <path class="mz" data-g="core" onclick="sm('core')"
-                d="M 46,120 Q 40,146 44,176 Q 56,186 74,178 L 80,166 Q 60,154 56,128 Z"/>
-              <!-- Right Oblique -->
-              <path class="mz" data-g="core" onclick="sm('core')"
-                d="M 134,120 Q 140,146 136,176 Q 124,186 106,178 L 100,166 Q 120,154 124,128 Z"/>
-              <!-- Abs (rectus abdominis) -->
-              <path class="mz" data-g="core" onclick="sm('core')"
-                d="M 80,122 L 100,122 L 100,196 Q 90,200 80,196 Z"/>
-              <!-- Lower abs / inguinal -->
-              <path class="mz" data-g="core" onclick="sm('core')"
-                d="M 72,196 Q 66,208 68,222 Q 80,228 90,226 Q 100,228 112,222 Q 114,208 108,196 Q 100,200 90,200 Q 80,200 72,196 Z"/>
-
-              <!-- Left Rectus Femoris (center) -->
-              <path class="mz" data-g="quads" onclick="sm('quads')"
-                d="M 82,232 Q 80,274 82,318 L 91,318 Q 93,274 91,232 Z"/>
-              <!-- Left Vastus Lateralis (outer sweep) -->
-              <path class="mz" data-g="quads" onclick="sm('quads')"
-                d="M 58,236 Q 50,274 54,316 Q 66,324 76,320 Q 78,282 74,240 Z"/>
-              <!-- Left Vastus Medialis (teardrop) -->
-              <path class="mz" data-g="quads" onclick="sm('quads')"
-                d="M 75,302 Q 68,322 78,330 L 88,326 Q 90,314 86,304 Z"/>
-              <!-- Right Rectus Femoris -->
-              <path class="mz" data-g="quads" onclick="sm('quads')"
-                d="M 98,232 Q 100,274 98,318 L 89,318 Q 87,274 89,232 Z"/>
-              <!-- Right Vastus Lateralis -->
-              <path class="mz" data-g="quads" onclick="sm('quads')"
-                d="M 122,236 Q 130,274 126,316 Q 114,324 104,320 Q 102,282 106,240 Z"/>
-              <!-- Right Vastus Medialis -->
-              <path class="mz" data-g="quads" onclick="sm('quads')"
-                d="M 105,302 Q 112,322 102,330 L 92,326 Q 90,314 94,304 Z"/>
-
-              <!-- Left Adductor -->
-              <path class="mz" data-g="adductors" onclick="sm('adductors')"
-                d="M 82,232 Q 80,274 82,316 L 76,318 Q 74,278 78,234 Z"/>
-              <!-- Right Adductor -->
-              <path class="mz" data-g="adductors" onclick="sm('adductors')"
-                d="M 98,232 Q 100,274 98,316 L 104,318 Q 106,278 102,234 Z"/>
-
-              <!-- Left Tibialis (front shin) -->
-              <path class="mz" data-g="calves" onclick="sm('calves')"
-                d="M 56,332 Q 50,364 54,394 L 68,394 Q 68,364 64,334 Z"/>
-              <!-- Right Tibialis -->
-              <path class="mz" data-g="calves" onclick="sm('calves')"
-                d="M 124,332 Q 130,364 126,394 L 112,394 Q 112,364 116,334 Z"/>
-
-              <!-- Front detail lines -->
-              <g pointer-events="none" stroke="#9090b0" stroke-width="0.65" opacity="0.75" fill="none">
-                <line x1="90" y1="66" x2="90" y2="122"/>
-                <line x1="90" y1="124" x2="90" y2="196"/>
-                <line x1="80" y1="146" x2="100" y2="146"/>
-                <line x1="80" y1="170" x2="100" y2="170"/>
-                <path d="M 52,74 Q 60,86 60,100"/>
-                <path d="M 128,74 Q 120,86 120,100"/>
-                <path d="M 58,82 Q 70,104 72,118"/>
-                <path d="M 122,82 Q 110,104 108,118"/>
-                <line x1="76" y1="244" x2="74" y2="302"/>
-                <line x1="91" y1="232" x2="91" y2="318"/>
-                <line x1="104" y1="244" x2="106" y2="302"/>
-              </g>
-            </g>
-
-            <!-- ══════ BACK MUSCLES ══════ -->
-            <g id="backView" clip-path="url(#bodyClip)" style="display:none">
-              <!-- Trapezius (large diamond) -->
-              <path class="mz" data-g="traps" onclick="sm('traps')"
-                d="M 90,54 Q 116,60 138,78 Q 146,96 140,120 Q 120,132 90,136 Q 60,132 40,120 Q 34,96 42,78 Q 64,60 90,54 Z"/>
-
-              <!-- Left Rear Deltoid -->
-              <path class="mz" data-g="shoulders" onclick="sm('shoulders')"
-                d="M 36,74 Q 24,82 22,100 Q 28,116 46,118 Q 58,110 60,92 Q 56,74 36,74 Z"/>
-              <!-- Right Rear Deltoid -->
-              <path class="mz" data-g="shoulders" onclick="sm('shoulders')"
-                d="M 144,74 Q 156,82 158,100 Q 152,116 134,118 Q 122,110 120,92 Q 124,74 144,74 Z"/>
-
-              <!-- Left Infraspinatus / Teres -->
-              <path class="mz" data-g="upperback" onclick="sm('upperback')"
-                d="M 44,120 Q 36,136 40,154 Q 52,162 68,154 Q 76,144 74,130 Q 60,118 44,120 Z"/>
-              <!-- Right Infraspinatus -->
-              <path class="mz" data-g="upperback" onclick="sm('upperback')"
-                d="M 136,120 Q 144,136 140,154 Q 128,162 112,154 Q 104,144 106,130 Q 120,118 136,120 Z"/>
-              <!-- Rhomboids / Mid Traps -->
-              <path class="mz" data-g="upperback" onclick="sm('upperback')"
-                d="M 80,108 Q 90,116 100,108 L 98,148 Q 90,152 82,148 Z"/>
-              <!-- Erector Spinae / Lower Back -->
-              <path class="mz" data-g="upperback" onclick="sm('upperback')"
-                d="M 82,152 Q 90,156 98,152 L 100,196 Q 90,202 80,196 Z"/>
-
-              <!-- Left Lat (V-wing) -->
-              <path class="mz" data-g="lats" onclick="sm('lats')"
-                d="M 40,120 Q 32,156 36,190 Q 48,202 70,194 Q 84,180 88,156 Q 90,134 84,120 Z"/>
-              <!-- Right Lat -->
-              <path class="mz" data-g="lats" onclick="sm('lats')"
-                d="M 140,120 Q 148,156 144,190 Q 132,202 110,194 Q 96,180 92,156 Q 90,134 96,120 Z"/>
-
-              <!-- Left Tricep -->
-              <path class="mz" data-g="triceps" onclick="sm('triceps')"
-                d="M 24,114 Q 16,138 18,164 L 40,164 Q 46,138 46,114 Z"/>
-              <!-- Right Tricep -->
-              <path class="mz" data-g="triceps" onclick="sm('triceps')"
-                d="M 156,114 Q 164,138 162,164 L 140,164 Q 134,138 134,114 Z"/>
-
-              <!-- Left Forearm back -->
-              <path class="mz" data-g="forearms" onclick="sm('forearms')"
-                d="M 18,166 Q 12,190 14,214 L 40,214 Q 44,188 42,166 Z"/>
-              <!-- Right Forearm back -->
-              <path class="mz" data-g="forearms" onclick="sm('forearms')"
-                d="M 162,166 Q 168,190 166,214 L 140,214 Q 136,188 138,166 Z"/>
-
-              <!-- Left Gluteus Medius (upper/fan) -->
-              <path class="mz" data-g="glutes" onclick="sm('glutes')"
-                d="M 48,212 Q 38,228 42,250 Q 56,260 78,250 Q 88,238 86,214 Z"/>
-              <!-- Right Gluteus Medius -->
-              <path class="mz" data-g="glutes" onclick="sm('glutes')"
-                d="M 132,212 Q 142,228 138,250 Q 124,260 102,250 Q 92,238 94,214 Z"/>
-              <!-- Left Gluteus Maximus -->
-              <path class="mz" data-g="glutes" onclick="sm('glutes')"
-                d="M 50,246 Q 40,272 48,298 Q 62,308 84,300 Q 92,286 90,248 Z"/>
-              <!-- Right Gluteus Maximus -->
-              <path class="mz" data-g="glutes" onclick="sm('glutes')"
-                d="M 130,246 Q 140,272 132,298 Q 118,308 96,300 Q 88,286 90,248 Z"/>
-
-              <!-- Left Biceps Femoris (outer ham) -->
-              <path class="mz" data-g="hamstrings" onclick="sm('hamstrings')"
-                d="M 52,302 Q 46,324 50,336 L 66,336 Q 68,320 64,304 Z"/>
-              <!-- Left Semitendinosus (inner ham) -->
-              <path class="mz" data-g="hamstrings" onclick="sm('hamstrings')"
-                d="M 66,302 Q 62,324 64,336 L 80,334 Q 82,316 76,304 Z"/>
-              <!-- Right Biceps Femoris -->
-              <path class="mz" data-g="hamstrings" onclick="sm('hamstrings')"
-                d="M 128,302 Q 134,324 130,336 L 114,336 Q 112,320 116,304 Z"/>
-              <!-- Right Semitendinosus -->
-              <path class="mz" data-g="hamstrings" onclick="sm('hamstrings')"
-                d="M 114,302 Q 118,324 116,336 L 100,334 Q 98,316 104,304 Z"/>
-
-              <!-- Left Gastroc outer head -->
-              <path class="mz" data-g="calves" onclick="sm('calves')"
-                d="M 50,340 Q 44,368 50,392 L 62,394 Q 60,368 56,342 Z"/>
-              <!-- Left Gastroc inner head -->
-              <path class="mz" data-g="calves" onclick="sm('calves')"
-                d="M 58,340 Q 62,368 60,394 L 74,394 Q 74,368 70,342 Z"/>
-              <!-- Right Gastroc outer head -->
-              <path class="mz" data-g="calves" onclick="sm('calves')"
-                d="M 130,340 Q 136,368 130,392 L 118,394 Q 120,368 124,342 Z"/>
-              <!-- Right Gastroc inner head -->
-              <path class="mz" data-g="calves" onclick="sm('calves')"
-                d="M 122,340 Q 118,368 120,394 L 106,394 Q 106,368 110,342 Z"/>
-
-              <!-- Back detail lines -->
-              <g pointer-events="none" stroke="#9090b0" stroke-width="0.65" opacity="0.75" fill="none">
-                <line x1="90" y1="58" x2="90" y2="202"/>
-                <path d="M 58,120 Q 66,132 64,152"/>
-                <path d="M 122,120 Q 114,132 116,152"/>
-                <path d="M 44,84 Q 52,96 54,112"/>
-                <path d="M 136,84 Q 128,96 126,112"/>
-              </g>
-            </g>
-          </svg>
+  <!-- BACK VIEW -->
+  <g id="backView" style="display:none">
+    <!-- Body silhouette back -->
+    <path class="body-outline" d="M 110,10 C 122,10 131,19 131,31 C 131,39 127,46 120,50 L 122,56 128,64 C 138,68 148,74 154,82 C 160,90 162,102 160,114 L 157,130 160,148 162,172 164,200 L 168,214 162,220 156,216 152,202 148,186 L 146,210 144,234 142,298 144,320 L 146,380 144,414 140,430 C 136,442 126,446 118,444 C 112,442 108,436 108,430 L 108,420 107,410 L 110,380 110,320 109,298 C 108,280 110,260 110,260 C 110,260 112,280 113,298 L 112,320 112,380 114,410 113,420 L 113,430 C 113,436 117,442 123,444 C 131,446 141,442 144,430 L 142,414 140,380 L 142,320 140,298 138,234 136,210 L 132,186 128,202 124,216 118,220 L 112,214 116,200 118,172 120,148 L 123,130 120,114 C 118,102 120,90 126,82 C 132,74 142,68 152,64 L 158,56 160,50 C 153,46 149,39 149,31 C 149,19 122,10 110,10 Z"/>
+    <!-- Head back -->
+    <ellipse class="body-outline" cx="110" cy="30" rx="21" ry="25"/>
+    <path class="body-outline" d="M 89,28 C 86,28 84,30 84,33 C 84,36 86,38 89,37"/>
+    <path class="body-outline" d="M 131,28 C 134,28 136,30 136,33 C 136,36 134,38 131,37"/>
+    <!-- Trapezius large diamond -->
+    <path class="mz" data-g="traps" onclick="sm('traps')" d="M 104,52 L 110,58 L 116,52 C 128,58 142,68 150,82 C 154,92 150,108 140,118 C 128,126 118,128 110,126 C 102,128 92,126 80,118 C 70,108 66,92 70,82 C 78,68 92,58 104,52 Z"/>
+    <!-- Left Rear Deltoid -->
+    <path class="mz" data-g="shoulders" onclick="sm('shoulders')" d="M 70,80 C 60,86 54,100 56,114 C 58,126 68,132 78,128 C 88,124 94,112 90,100 C 86,88 78,78 70,80 Z"/>
+    <!-- Right Rear Deltoid -->
+    <path class="mz" data-g="shoulders" onclick="sm('shoulders')" d="M 150,80 C 160,86 166,100 164,114 C 162,126 152,132 142,128 C 132,124 126,112 130,100 C 134,88 142,78 150,80 Z"/>
+    <!-- Left Infraspinatus -->
+    <path class="mz" data-g="upperback" onclick="sm('upperback')" d="M 78,120 C 68,128 64,144 68,158 C 74,164 86,162 92,154 C 98,144 96,130 88,122 Z"/>
+    <!-- Right Infraspinatus -->
+    <path class="mz" data-g="upperback" onclick="sm('upperback')" d="M 142,120 C 152,128 156,144 152,158 C 146,164 134,162 128,154 C 122,144 124,130 132,122 Z"/>
+    <!-- Rhomboids center diamond -->
+    <path class="mz" data-g="upperback" onclick="sm('upperback')" d="M 100,118 L 110,128 L 120,118 L 110,108 Z"/>
+    <!-- Left Lat V-wing -->
+    <path class="mz" data-g="lats" onclick="sm('lats')" d="M 78,126 C 66,144 62,172 66,198 C 74,208 90,206 100,192 C 108,178 110,152 106,128 Z"/>
+    <!-- Right Lat V-wing -->
+    <path class="mz" data-g="lats" onclick="sm('lats')" d="M 142,126 C 154,144 158,172 154,198 C 146,208 130,206 120,192 C 112,178 110,152 114,128 Z"/>
+    <!-- Lower back diamond -->
+    <path class="mz" data-g="lowerback" onclick="sm('lowerback')" d="M 100,196 L 110,206 L 120,196 L 110,186 Z"/>
+    <!-- Lower back bottom -->
+    <path class="mz" data-g="lowerback" onclick="sm('lowerback')" d="M 98,208 C 96,220 96,232 98,242 L 110,248 L 122,242 C 124,232 124,220 122,208 L 110,214 Z"/>
+    <!-- Left Tricep -->
+    <path class="mz" data-g="triceps" onclick="sm('triceps')" d="M 56,114 C 50,130 48,152 52,170 C 58,176 68,174 74,166 C 78,154 78,132 72,116 Z"/>
+    <!-- Right Tricep -->
+    <path class="mz" data-g="triceps" onclick="sm('triceps')" d="M 164,114 C 170,130 172,152 168,170 C 162,176 152,174 146,166 C 142,154 142,132 148,116 Z"/>
+    <!-- Left Forearm back -->
+    <path class="mz" data-g="forearms" onclick="sm('forearms')" d="M 50,172 C 44,190 42,212 46,230 C 52,234 62,232 66,224 C 70,212 70,190 66,172 Z"/>
+    <!-- Right Forearm back -->
+    <path class="mz" data-g="forearms" onclick="sm('forearms')" d="M 170,172 C 176,190 178,212 174,230 C 168,234 158,232 154,224 C 150,212 150,190 154,172 Z"/>
+    <!-- Left hand back -->
+    <path class="body-outline" d="M 44,230 C 40,238 38,246 40,252 C 42,256 46,256 50,252 L 52,256 C 54,260 58,260 60,256 L 62,260 C 64,264 68,262 68,258 L 68,252 C 70,248 70,240 68,232"/>
+    <!-- Right hand back -->
+    <path class="body-outline" d="M 176,230 C 180,238 182,246 180,252 C 178,256 174,256 170,252 L 168,256 C 166,260 162,260 160,256 L 158,260 C 156,264 152,262 152,258 L 152,252 C 150,248 150,240 152,232"/>
+    <!-- Left Glute Medius -->
+    <path class="mz" data-g="glutes" onclick="sm('glutes')" d="M 80,236 C 70,248 68,268 74,282 C 82,290 96,286 102,274 C 106,262 104,244 94,236 Z"/>
+    <!-- Right Glute Medius -->
+    <path class="mz" data-g="glutes" onclick="sm('glutes')" d="M 140,236 C 150,248 152,268 146,282 C 138,290 124,286 118,274 C 114,262 116,244 126,236 Z"/>
+    <!-- Left Glute Maximus -->
+    <path class="mz" data-g="glutes" onclick="sm('glutes')" d="M 76,278 C 68,298 70,322 80,336 C 90,342 104,338 110,326 C 114,312 112,286 102,276 Z"/>
+    <!-- Right Glute Maximus -->
+    <path class="mz" data-g="glutes" onclick="sm('glutes')" d="M 144,278 C 152,298 150,322 140,336 C 130,342 116,338 110,326 C 106,312 108,286 118,276 Z"/>
+    <!-- Left Biceps Femoris -->
+    <path class="mz" data-g="hamstrings" onclick="sm('hamstrings')" d="M 76,340 C 70,362 72,384 78,398 C 86,402 96,398 98,388 C 100,372 98,352 90,342 Z"/>
+    <!-- Left Semitendinosus -->
+    <path class="mz" data-g="hamstrings" onclick="sm('hamstrings')" d="M 92,340 C 90,362 92,384 98,396 C 104,400 112,398 112,388 C 112,370 110,350 102,342 Z"/>
+    <!-- Right Biceps Femoris -->
+    <path class="mz" data-g="hamstrings" onclick="sm('hamstrings')" d="M 144,340 C 150,362 148,384 142,398 C 134,402 124,398 122,388 C 120,372 122,352 130,342 Z"/>
+    <!-- Right Semitendinosus -->
+    <path class="mz" data-g="hamstrings" onclick="sm('hamstrings')" d="M 128,340 C 130,362 128,384 122,396 C 116,400 108,398 108,388 C 108,370 110,350 118,342 Z"/>
+    <!-- Left Gastrocnemius outer -->
+    <path class="mz" data-g="calves" onclick="sm('calves')" d="M 72,402 C 66,418 66,436 72,448 C 78,452 86,450 88,440 C 90,428 88,412 80,404 Z"/>
+    <!-- Left Gastrocnemius inner -->
+    <path class="mz" data-g="calves" onclick="sm('calves')" d="M 84,402 C 84,418 86,436 90,448 C 94,452 100,450 102,440 C 104,428 100,412 92,404 Z"/>
+    <!-- Left Soleus -->
+    <path class="mz" data-g="calves" onclick="sm('calves')" d="M 70,450 C 68,462 70,474 74,480 L 98,482 C 102,476 102,464 100,452 C 92,458 80,458 70,450 Z"/>
+    <!-- Right Gastrocnemius outer -->
+    <path class="mz" data-g="calves" onclick="sm('calves')" d="M 148,402 C 154,418 154,436 148,448 C 142,452 134,450 132,440 C 130,428 132,412 140,404 Z"/>
+    <!-- Right Gastrocnemius inner -->
+    <path class="mz" data-g="calves" onclick="sm('calves')" d="M 136,402 C 136,418 134,436 130,448 C 126,452 120,450 118,440 C 116,428 120,412 128,404 Z"/>
+    <!-- Right Soleus -->
+    <path class="mz" data-g="calves" onclick="sm('calves')" d="M 150,450 C 152,462 150,474 146,480 L 122,482 C 118,476 118,464 120,452 C 128,458 140,458 150,450 Z"/>
+    <!-- Left foot back -->
+    <path class="body-outline" d="M 68,484 C 62,488 58,494 60,500 L 62,504 C 64,508 74,508 82,506 L 88,502 L 88,484 Z"/>
+    <!-- Right foot back -->
+    <path class="body-outline" d="M 152,484 C 158,488 162,494 160,500 L 158,504 C 156,508 146,508 138,506 L 132,502 L 132,484 Z"/>
+    <!-- Back spine line -->
+    <line class="detail" x1="110" y1="66" x2="110" y2="210"/>
+    <path class="detail" d="M 80,120 Q 86,134 84,150 M 140,120 Q 134,134 136,150"/>
+  </g>
+</svg>
       </div>
 
       <div class="grid-title" id="gridTitle">Группы мышц</div>
