@@ -1,334 +1,185 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>FitMap</title>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover"/>
+<title>Карта мышц</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
-:root {
-  --accent: #FF2D55;
-  --blue: #0A84FF;
-  --green: #30D158;
-  --bg: #F2F2F7;
-  --card: #FFFFFF;
-  --text: #1C1C1E;
-  --text2: #6E6E73;
-  --text3: #AEAEB2;
-  --border: #E5E5EA;
-  --seg-bg: #E5E5EA;
-  --seg-active: #FFFFFF;
-  --chip-bg: #E5E5EA;
-  --chip-text: #3A3A3C;
-  --nav-bg: rgba(255,255,255,0.92);
-  --shadow: 0 2px 12px rgba(0,0,0,0.08);
-  --shadow2: 0 4px 20px rgba(0,0,0,0.12);
-  --input-bg: #F2F2F7;
-  --star-off: #C7C7CC;
-  --star-on: #FF9F0A;
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased}
+:root{
+  --bg:#f2f2f7; --card:#ffffff; --card2:#fafafa;
+  --hairline:rgba(60,60,67,.12); --hairline2:rgba(60,60,67,.22);
+  --text:#1c1c1e; --text2:#3c3c43; --muted:#8e8e93;
+  --accent:#FF2D55; --accent-soft:#FFE5EC;
+  --syn:#0A84FF; --syn-soft:#E5F1FF;
+  --gold:#FFB800;
+  --muscle-fill:#f5f5f7; --muscle-stroke:#b8b8c0; --body-stroke:#3a3a44;
 }
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #000000;
-    --card: #1C1C1E;
-    --text: #FFFFFF;
-    --text2: #AEAEB2;
-    --text3: #6E6E73;
-    --border: #38383A;
-    --seg-bg: #2C2C2E;
-    --seg-active: #3A3A3C;
-    --chip-bg: #2C2C2E;
-    --chip-text: #EBEBF5;
-    --nav-bg: rgba(28,28,30,0.92);
-    --shadow: 0 2px 12px rgba(0,0,0,0.4);
-    --shadow2: 0 4px 20px rgba(0,0,0,0.5);
-    --input-bg: #2C2C2E;
-    --star-off: #6E6E73;
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#000; --card:#1c1c1e; --card2:#2c2c2e;
+    --hairline:rgba(255,255,255,.10); --hairline2:rgba(255,255,255,.18);
+    --text:#fff; --text2:#ebebf5; --muted:#8e8e93;
+    --accent-soft:rgba(255,45,85,.18); --syn-soft:rgba(10,132,255,.18);
+    --muscle-fill:#2c2c2e; --muscle-stroke:#48484a; --body-stroke:#8e8e93;
   }
 }
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text',system-ui,sans-serif;color:var(--text);-webkit-tap-highlight-color:transparent}
-body{display:flex;justify-content:center;align-items:stretch}
-.app{display:flex;flex-direction:column;height:100vh;width:100%;max-width:480px;overflow:hidden;position:relative;background:var(--bg)}
-.screen{display:none;flex-direction:column;flex:1;overflow:hidden}
-.screen.active{display:flex}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text',system-ui,sans-serif;overflow:hidden;letter-spacing:-.01em}
 
-/* Bottom nav */
-.bnav{
-  position:sticky;bottom:0;left:0;right:0;
-  height:56px;
-  background:var(--nav-bg);
-  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
-  border-top:0.5px solid var(--border);
-  display:flex;align-items:stretch;
-  padding-bottom:env(safe-area-inset-bottom);
-  z-index:100;
-  flex-shrink:0;
-}
-.bnav-btn{
-  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:2px;background:none;border:none;cursor:pointer;
-  color:var(--text3);font-size:9px;font-weight:500;
-  transition:color 0.2s;padding:4px 0;
-}
-.bnav-btn .ico{font-size:22px;line-height:1}
-.bnav-btn.active{color:var(--accent)}
+.app{display:flex;flex-direction:column;height:100vh;max-width:480px;margin:0 auto;position:relative}
 
-/* Cards */
-.card{background:var(--card);border-radius:16px;box-shadow:var(--shadow)}
+/* ===== VIEWS ===== */
+.view{flex:1;overflow-y:auto;padding:14px 16px 90px;-webkit-overflow-scrolling:touch;display:none}
+.view.on{display:block}
+.view::-webkit-scrollbar{display:none}
 
-/* Home screen */
-.home-content{flex:1;overflow-y:auto;padding:20px 16px;display:flex;flex-direction:column;gap:16px}
-.home-hero{padding:28px 24px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center}
-.home-logo{font-size:52px;font-weight:800;letter-spacing:-2px;background:linear-gradient(135deg,var(--accent),#FF6B6B);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.home-tagline{font-size:17px;font-weight:500;color:var(--text2)}
-.home-quote{background:var(--card);border-radius:16px;padding:20px;box-shadow:var(--shadow);border-left:4px solid var(--accent)}
-.home-quote p{font-size:15px;line-height:1.5;color:var(--text);font-style:italic}
-.home-quote .quote-author{font-size:13px;color:var(--text2);margin-top:8px;font-style:normal;font-weight:600}
-.home-stats{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.stat-card{background:var(--card);border-radius:16px;padding:16px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:4px}
-.stat-card .stat-ico{font-size:24px}
-.stat-card .stat-val{font-size:22px;font-weight:700;color:var(--text)}
-.stat-card .stat-lbl{font-size:12px;color:var(--text2)}
+/* ===== HEADER ===== */
+.hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.hdr h1{font-size:26px;font-weight:800;letter-spacing:-.6px}
+.hdr .sub{font-size:12px;color:var(--muted);font-weight:500;margin-top:2px}
+.hdr .badge{width:38px;height:38px;border-radius:50%;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:18px;cursor:pointer}
 
-/* Nutrition screen */
-.nutr-content{flex:1;display:flex;align-items:center;justify-content:center;padding:24px}
-.nutr-placeholder{background:var(--card);border-radius:20px;padding:40px 32px;text-align:center;box-shadow:var(--shadow2)}
-.nutr-placeholder .nut-ico{font-size:60px;margin-bottom:16px}
-.nutr-placeholder h2{font-size:22px;font-weight:700;margin-bottom:8px}
-.nutr-placeholder p{font-size:15px;color:var(--text2);line-height:1.5}
+/* ===== SEARCH ===== */
+.search{position:relative;margin-bottom:12px}
+.search input{width:100%;padding:11px 14px 11px 36px;border-radius:12px;border:none;background:rgba(120,120,128,.16);color:var(--text);font-size:15px;font-family:inherit;outline:none;letter-spacing:-.2px}
+.search input::placeholder{color:var(--muted)}
+.search::before{content:'⌕';position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:18px;font-weight:700}
 
-/* Library screen */
-.lib-top{padding:12px 12px 0;display:flex;flex-direction:column;gap:10px;flex-shrink:0}
-.search-wrap{position:relative}
-.search-ico{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--text3);pointer-events:none}
-#searchInput{
-  width:100%;height:38px;border-radius:12px;border:none;
-  background:var(--input-bg);color:var(--text);
-  padding:0 12px 0 36px;font-size:15px;
-  outline:none;
-  -webkit-appearance:none;
-}
-#searchInput::placeholder{color:var(--text3)}
-.seg-ctrl{
-  display:flex;background:var(--seg-bg);border-radius:10px;padding:2px;gap:2px;
-}
-.seg-btn{
-  flex:1;height:32px;border:none;border-radius:8px;background:none;
-  font-size:14px;font-weight:500;color:var(--text2);cursor:pointer;
-  transition:all 0.2s;
-}
-.seg-btn.active{background:var(--seg-active);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,0.12);}
+/* ===== TOGGLE FRONT/BACK ===== */
+.tgl{display:flex;background:rgba(120,120,128,.16);border-radius:10px;padding:2px;gap:2px;margin-bottom:10px}
+.tgl button{flex:1;padding:8px;border:none;background:transparent;border-radius:8px;font-size:13px;font-weight:600;color:var(--text);cursor:pointer;transition:.25s}
+.tgl button.on{background:var(--card);box-shadow:0 3px 8px rgba(0,0,0,.12),0 1px 2px rgba(0,0,0,.04)}
 
-.lib-body{flex:1;display:flex;overflow:hidden;padding:10px 12px 12px;gap:10px}
-.left-col{width:152px;flex-shrink:0;display:flex;flex-direction:column;gap:10px;overflow:hidden}
-.svg-card{background:var(--card);border-radius:14px;box-shadow:var(--shadow);padding:6px;flex-shrink:0;cursor:pointer}
-.svg-card svg{width:100%;height:auto;display:block}
-.mz{cursor:pointer;fill:#d8daeb;stroke:#9092b0;stroke-width:0.8;opacity:1;transition:fill 0.25s,opacity 0.25s}
-.mz:hover{opacity:0.85!important}
+/* ===== FIGURE ===== */
+.fig-card{background:linear-gradient(180deg,var(--card) 0%,var(--card2) 100%);border-radius:22px;padding:8px;border:.5px solid var(--hairline);box-shadow:0 1px 3px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.04);height:380px;position:relative;overflow:hidden}
+.fig-card::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 30%,rgba(255,45,85,.05),transparent 60%);pointer-events:none}
+.fig-card svg{width:100%;height:100%;display:block;position:relative}
+.mz{cursor:pointer;transition:fill .25s ease,opacity .25s ease;fill:var(--muscle-fill);stroke:var(--muscle-stroke);stroke-width:.7}
+.mz.dim{opacity:.35}
+.mz.act{fill:var(--accent);stroke:var(--accent)}
+.mz.syn{fill:var(--syn);stroke:var(--syn);opacity:.7}
+.body-line{fill:var(--card);stroke:var(--body-stroke);stroke-width:1;stroke-linejoin:round}
 
-.muscle-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;overflow-y:auto;flex:1}
-.muscle-grid::-webkit-scrollbar{display:none}
-.chip-btn{
-  padding:6px 4px;border-radius:20px;border:none;
-  background:var(--chip-bg);color:var(--chip-text);
-  font-size:11px;font-weight:500;cursor:pointer;
-  transition:all 0.2s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-  text-align:center;
-}
-.chip-btn.active{background:var(--accent);color:#fff}
+/* ===== MUSCLE GRID ===== */
+.grid-title{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin:18px 4px 8px}
+.mgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.mcard{background:var(--card);border:.5px solid var(--hairline);border-radius:14px;padding:12px 8px;text-align:center;cursor:pointer;font-size:12px;font-weight:600;color:var(--text);box-shadow:0 1px 2px rgba(0,0,0,.03);transition:.15s}
+.mcard:active{transform:scale(.96)}
+.mcard.active{background:var(--accent);color:#fff;border-color:var(--accent);box-shadow:0 6px 16px rgba(255,45,85,.3)}
+.mcard .ic{font-size:22px;display:block;margin-bottom:4px}
 
-.right-col{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
-.panel-tabs{display:flex;border-bottom:0.5px solid var(--border);flex-shrink:0;margin-bottom:0}
-.ptab{
-  flex:1;height:38px;border:none;background:none;
-  font-size:13px;font-weight:600;color:var(--text3);cursor:pointer;
-  border-bottom:2px solid transparent;transition:all 0.2s;
-}
-.ptab.active{color:var(--accent);border-bottom-color:var(--accent)}
-.panel-body{flex:1;overflow-y:auto;padding:10px 0}
-.panel-body::-webkit-scrollbar{display:none}
+/* ===== SECTION CARD ===== */
+.sec{background:var(--card);border-radius:18px;padding:14px;border:.5px solid var(--hairline);box-shadow:0 1px 3px rgba(0,0,0,.04);margin-bottom:12px}
+.sec h2{font-size:17px;font-weight:800;letter-spacing:-.4px;margin-bottom:10px}
 
-/* Search results */
-.search-results{flex:1;overflow-y:auto;padding:8px 0}
-.search-results::-webkit-scrollbar{display:none}
-.search-group-label{font-size:12px;font-weight:600;color:var(--text2);padding:8px 12px 4px;text-transform:uppercase;letter-spacing:0.4px}
+/* ===== BOTTOM SHEET ===== */
+.sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);opacity:0;pointer-events:none;transition:.25s;z-index:50}
+.sheet-bg.on{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:0;right:0;bottom:0;max-width:480px;margin:0 auto;background:var(--card);border-radius:22px 22px 0 0;padding:10px 18px 30px;max-height:82vh;overflow-y:auto;transform:translateY(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);z-index:51;box-shadow:0 -10px 40px rgba(0,0,0,.2)}
+.sheet.on{transform:translateY(0)}
+.sheet::-webkit-scrollbar{display:none}
+.sheet-grab{width:38px;height:5px;background:var(--hairline2);border-radius:3px;margin:6px auto 14px}
 
-/* Exercise items */
-.ex-row{
-  display:flex;align-items:center;padding:10px 12px;
-  border-bottom:0.5px solid var(--border);gap:8px;
-}
-.ex-row:last-child{border-bottom:none}
-.ex-link{
-  flex:1;font-size:14px;color:var(--text);text-decoration:none;
-  font-weight:500;line-height:1.3;
-}
-.ex-link:active{opacity:0.6}
-.star-btn{
-  background:none;border:none;cursor:pointer;
-  font-size:20px;padding:2px 4px;flex-shrink:0;
-  transition:transform 0.15s;
-}
-.star-btn:active{transform:scale(0.8)}
+.muscle-cat{font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.6px}
+.muscle-name{font-size:24px;font-weight:800;letter-spacing:-.6px;margin-bottom:8px}
+.tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px}
+.tag{padding:5px 11px;border-radius:8px;font-size:11px;font-weight:600;display:inline-flex;align-items:center;gap:5px}
+.tag::before{content:'';width:6px;height:6px;border-radius:50%}
+.tag-main{background:var(--accent-soft);color:var(--accent)}
+.tag-main::before{background:var(--accent)}
+.tag-syn{background:var(--syn-soft);color:var(--syn)}
+.tag-syn::before{background:var(--syn)}
 
-/* Panel states */
-.idle-state{
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  height:100%;padding:24px;text-align:center;gap:12px;
-}
-.idle-ico{font-size:48px;opacity:0.4}
-.idle-txt{font-size:15px;color:var(--text2);line-height:1.5}
+.vsec{font-size:11px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);font-weight:700;margin:18px 0 6px}
+.vi{display:flex;align-items:center;gap:11px;padding:11px 0;border-top:.5px solid var(--hairline);text-decoration:none;color:var(--text)}
+.vi:first-of-type{border-top:none}
+.vico{width:34px;height:34px;border-radius:10px;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--accent);font-size:13px;font-weight:800}
+.vt{font-size:14px;line-height:1.3;font-weight:500;flex:1;letter-spacing:-.1px}
+.star{font-size:20px;color:var(--muted);cursor:pointer;padding:6px;line-height:1;flex-shrink:0;transition:.15s}
+.star.on{color:var(--gold)}
+.star:active{transform:scale(.8)}
 
-.muscle-header{padding:8px 12px 4px}
-.muscle-name-big{font-size:18px;font-weight:700;color:var(--text)}
-.muscle-cat{font-size:12px;color:var(--text2);margin-top:2px}
-.syn-row{display:flex;flex-wrap:wrap;gap:6px;padding:6px 12px 10px;align-items:center}
-.syn-label{font-size:12px;color:var(--text2)}
-.syn-chip{
-  padding:4px 10px;border-radius:12px;background:rgba(10,132,255,0.12);
-  color:var(--blue);font-size:12px;font-weight:600;cursor:pointer;border:none;
-  transition:background 0.2s;
-}
-.syn-chip:hover{background:rgba(10,132,255,0.2)}
+/* ===== TAB BAR ===== */
+.tabbar{position:fixed;left:0;right:0;bottom:0;max-width:480px;margin:0 auto;background:rgba(255,255,255,.85);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border-top:.5px solid var(--hairline);display:flex;padding:6px 0 18px;z-index:30}
+@media (prefers-color-scheme: dark){.tabbar{background:rgba(28,28,30,.85)}}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px;border:none;background:none;color:var(--muted);cursor:pointer;font-family:inherit;font-size:10px;font-weight:600}
+.tab svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tab.on{color:var(--accent)}
 
-.part-header{font-size:13px;font-weight:700;color:var(--text2);padding:10px 12px 4px;text-transform:uppercase;letter-spacing:0.4px}
-.part-divider{height:0.5px;background:var(--border);margin:4px 0}
+/* ===== EMPTY STATE ===== */
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:60vh;text-align:center;gap:12px;color:var(--muted)}
+.empty .ico{width:72px;height:72px;border-radius:24px;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;font-size:32px;color:var(--accent)}
+.empty h3{font-size:20px;font-weight:800;color:var(--text);letter-spacing:-.4px}
+.empty p{font-size:13px;line-height:1.5;max-width:240px}
 
-/* Favorites */
-.fav-group-label{font-size:12px;font-weight:700;color:var(--text2);padding:10px 12px 4px;text-transform:uppercase;letter-spacing:0.4px}
-.fav-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:12px;color:var(--text3)}
-.fav-empty .fav-ico{font-size:40px;opacity:0.4}
-.fav-empty p{font-size:14px}
+/* ===== PROFILE ===== */
+.field{margin-bottom:12px}
+.field label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:6px}
+.field input{width:100%;padding:11px 13px;border-radius:11px;border:.5px solid var(--hairline2);background:var(--card2);color:var(--text);font-size:15px;font-family:inherit;outline:none;letter-spacing:-.2px}
+.field input:focus{border-color:var(--accent)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.photos{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:6px}
+.photo{aspect-ratio:3/4;border-radius:14px;background:var(--card2);border:1.5px dashed var(--hairline2);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);font-size:11px;font-weight:600;overflow:hidden;position:relative}
+.photo span{font-size:24px;display:block;margin-bottom:4px}
+.photo img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+.photo input{display:none}
+.btn{display:block;width:100%;padding:14px;border:none;background:var(--accent);color:#fff;font-size:15px;font-weight:700;border-radius:14px;cursor:pointer;font-family:inherit;letter-spacing:-.2px;margin-top:6px;box-shadow:0 6px 16px rgba(255,45,85,.3)}
+.btn:active{transform:scale(.98)}
 
-/* Profile screen */
-.profile-scroll{flex:1;overflow-y:auto;padding:20px 16px 24px}
-.profile-scroll::-webkit-scrollbar{display:none}
-.avatar-section{display:flex;flex-direction:column;align-items:center;gap:12px;margin-bottom:20px}
-.avatar-circle{
-  width:80px;height:80px;border-radius:50%;
-  background:linear-gradient(135deg,var(--accent),#FF6B6B);
-  display:flex;align-items:center;justify-content:center;
-  font-size:32px;cursor:pointer;
-  box-shadow:var(--shadow2);
-}
-.avatar-name{font-size:18px;font-weight:700;color:var(--text)}
-.form-section{background:var(--card);border-radius:16px;box-shadow:var(--shadow);margin-bottom:16px;overflow:hidden}
-.form-section-title{font-size:13px;font-weight:600;color:var(--text2);padding:12px 16px 4px;text-transform:uppercase;letter-spacing:0.4px}
-.form-row{display:flex;border-bottom:0.5px solid var(--border)}
-.form-row:last-child{border-bottom:none}
-.form-field{flex:1;display:flex;flex-direction:column;padding:10px 16px;border-right:0.5px solid var(--border)}
-.form-field:last-child{border-right:none}
-.form-field label{font-size:11px;color:var(--text2);font-weight:500;margin-bottom:4px}
-.form-field input{
-  background:none;border:none;outline:none;
-  font-size:15px;color:var(--text);font-family:inherit;
-  width:100%;-webkit-appearance:none;
-}
-.form-field input::placeholder{color:var(--text3)}
-.full-field{border-bottom:0.5px solid var(--border);padding:12px 16px}
-.full-field:last-child{border-bottom:none}
-.full-field label{font-size:11px;color:var(--text2);font-weight:500;margin-bottom:4px;display:block}
-.full-field input{
-  background:none;border:none;outline:none;
-  font-size:16px;color:var(--text);font-family:inherit;
-  width:100%;-webkit-appearance:none;
-}
-.photo-section{margin-bottom:16px}
-.photo-section-title{font-size:13px;font-weight:600;color:var(--text2);padding:0 0 8px;text-transform:uppercase;letter-spacing:0.4px}
-.photo-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.photo-btn{
-  aspect-ratio:3/4;border-radius:12px;border:2px dashed var(--border);
-  background:var(--card);display:flex;flex-direction:column;align-items:center;
-  justify-content:center;gap:6px;cursor:pointer;overflow:hidden;
-  box-shadow:var(--shadow);transition:border-color 0.2s;
-}
-.photo-btn:hover{border-color:var(--accent)}
-.photo-btn .ph-ico{font-size:24px;opacity:0.5}
-.photo-btn .ph-lbl{font-size:11px;color:var(--text2);font-weight:500}
-.photo-btn img{width:100%;height:100%;object-fit:cover}
-.save-btn{
-  width:100%;height:50px;border-radius:14px;border:none;
-  background:var(--accent);color:#fff;font-size:17px;font-weight:600;
-  cursor:pointer;box-shadow:var(--shadow2);
-  transition:opacity 0.2s,transform 0.1s;
-  font-family:inherit;
-}
-.save-btn:active{opacity:0.8;transform:scale(0.98)}
-.toast{
-  position:fixed;bottom:80px;left:50%;transform:translateX(-50%);
-  background:rgba(0,0,0,0.8);color:#fff;padding:10px 20px;border-radius:20px;
-  font-size:14px;font-weight:500;z-index:999;
-  opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap;
-}
-.toast.show{opacity:1}
+.profile-hdr{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+.avatar{width:64px;height:64px;border-radius:50%;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:28px;font-weight:800}
+
+/* search results */
+.sr-list{margin-top:8px}
+.sr-empty{text-align:center;padding:30px;color:var(--muted);font-size:13px}
 </style>
 </head>
 <body>
+
 <div class="app">
 
-  <!-- HOME SCREEN -->
-  <div class="screen active" id="s-home">
-    <div class="home-content">
-      <div class="card home-hero">
-        <div class="home-logo">FitMap</div>
-        <div class="home-tagline">Твой личный тренер</div>
-      </div>
-      <div class="home-quote card">
-        <p>"Тело — это лучший тренажёр. Оно подскажет тебе, что нужно улучшить, если ты научишься его слушать."</p>
-        <div class="quote-author">— Арнольд Шварценеггер</div>
-      </div>
-      <div class="home-stats">
-        <div class="stat-card">
-          <span class="stat-ico">💪</span>
-          <span class="stat-val">14</span>
-          <span class="stat-lbl">Групп мышц</span>
-        </div>
-        <div class="stat-card">
-          <span class="stat-ico">🎯</span>
-          <span class="stat-val">59</span>
-          <span class="stat-lbl">Упражнений</span>
-        </div>
-        <div class="stat-card">
-          <span class="stat-ico">⭐</span>
-          <span class="stat-val" id="home-fav-count">0</span>
-          <span class="stat-lbl">Избранных</span>
-        </div>
-        <div class="stat-card">
-          <span class="stat-ico">🏃</span>
-          <span class="stat-val">2</span>
-          <span class="stat-lbl">Вида тела</span>
-        </div>
-      </div>
+  <!-- ═══════════ HOME ═══════════ -->
+  <div class="view" id="v-home">
+    <div class="hdr"><div><h1>Главная</h1><div class="sub">Привет 👋</div></div></div>
+    <div class="empty">
+      <div class="ico">🏠</div>
+      <h3>Скоро здесь появится</h3>
+      <p>Лента тренировок, прогресс и рекомендации</p>
     </div>
   </div>
 
-  <!-- NUTRITION SCREEN -->
-  <div class="screen" id="s-nutr">
-    <div class="nutr-content">
-      <div class="nutr-placeholder">
-        <div class="nut-ico">🥗</div>
-        <h2>Питание</h2>
-        <p>Раздел питания скоро<br>будет доступен.<br>Следите за обновлениями!</p>
-      </div>
+  <!-- ═══════════ FOOD ═══════════ -->
+  <div class="view" id="v-food">
+    <div class="hdr"><div><h1>Питание</h1><div class="sub">Дневник и рецепты</div></div></div>
+    <div class="empty">
+      <div class="ico">🍎</div>
+      <h3>В разработке</h3>
+      <p>Тут будет дневник питания, расчёт КБЖУ и подборки рецептов</p>
     </div>
   </div>
 
-  <!-- LIBRARY SCREEN -->
-  <div class="screen" id="s-lib">
-    <div class="lib-top">
-      <div class="search-wrap">
-        <span class="search-ico">🔍</span>
-        <input type="text" id="searchInput" placeholder="Поиск упражнений..." oninput="onSearch(this.value)" autocomplete="off">
-      </div>
-      <div class="seg-ctrl">
-        <button class="seg-btn active" id="seg-front" onclick="sv('front')">Спереди</button>
-        <button class="seg-btn" id="seg-back" onclick="sv('back')">Сзади</button>
-      </div>
+  <!-- ═══════════ LIBRARY ═══════════ -->
+  <div class="view on" id="v-lib">
+    <div class="hdr">
+      <div><h1>Библиотека</h1><div class="sub">Анатомия и упражнения</div></div>
+      <div class="badge" onclick="openFavs()">★</div>
     </div>
-    <div class="lib-body">
-      <div class="left-col">
-        <div class="svg-card">
-          <svg id="bodySvg" viewBox="0 0 180 430" xmlns="http://www.w3.org/2000/svg">
+
+    <div class="search">
+      <input id="srch" placeholder="Поиск упражнений" oninput="onSearch()"/>
+    </div>
+
+    <div id="srResults" style="display:none"></div>
+
+    <div id="libMain">
+      <div class="tgl">
+        <button id="bf" class="on" onclick="sv('front')">Спереди</button>
+        <button id="bb" onclick="sv('back')">Сзади</button>
+      </div>
+
+      <div class="fig-card">
+        <svg id="bodySvg" viewBox="0 0 180 430" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <clipPath id="bodyClip">
                 <path d="M 90,5 C 104,5 113,14 113,26 C 113,38 106,45 98,47 L 102,56 110,62 126,68 140,74 148,84 150,98 146,112 L 152,162 156,208 160,218 150,222 142,216 138,198 132,176 132,210 128,232 124,322 128,328 130,400 122,412 110,414 107,400 103,396 L 90,396 77,396 73,400 70,414 58,412 50,400 52,328 56,322 52,232 48,210 48,176 42,198 38,216 30,222 20,218 24,208 28,162 L 34,112 30,98 32,84 40,74 54,68 70,62 78,56 82,47 C 74,45 67,38 67,26 C 67,14 76,5 90,5 Z"/>
@@ -352,7 +203,7 @@ body{display:flex;justify-content:center;align-items:stretch}
             </g>
 
             <!-- ══════ FRONT MUSCLES ══════ -->
-            <g id="fz" clip-path="url(#bodyClip)">
+            <g id="frontView" clip-path="url(#bodyClip)">
               <!-- Upper Traps (visible from front, shoulder mounds) -->
               <path class="mz" data-g="traps" onclick="sm('traps')"
                 d="M 82,57 L 98,57 Q 114,63 126,72 Q 134,82 130,92 Q 114,84 90,86 Q 66,84 50,92 Q 46,82 54,72 Q 66,63 82,57 Z"/>
@@ -448,7 +299,7 @@ body{display:flex;justify-content:center;align-items:stretch}
             </g>
 
             <!-- ══════ BACK MUSCLES ══════ -->
-            <g id="bz" clip-path="url(#bodyClip)" style="display:none">
+            <g id="backView" clip-path="url(#bodyClip)" style="display:none">
               <!-- Trapezius (large diamond) -->
               <path class="mz" data-g="traps" onclick="sm('traps')"
                 d="M 90,54 Q 116,60 138,78 Q 146,96 140,120 Q 120,132 90,136 Q 60,132 40,120 Q 34,96 42,78 Q 64,60 90,54 Z"/>
@@ -543,468 +394,410 @@ body{display:flex;justify-content:center;align-items:stretch}
               </g>
             </g>
           </svg>
-        </div>
-        <div class="muscle-grid" id="muscleGrid"></div>
       </div>
 
-      <div class="right-col">
-        <!-- Search results overlay -->
-        <div id="searchResultsWrap" style="display:none;flex:1;overflow-y:auto;flex-direction:column">
-          <div id="searchResults" class="search-results"></div>
-        </div>
-        <!-- Normal panel -->
-        <div id="normalPanel" style="display:flex;flex-direction:column;flex:1;overflow:hidden">
-          <div class="panel-tabs">
-            <button class="ptab active" id="ptab-muscles" onclick="switchPanelTab('muscles')">Мышцы</button>
-            <button class="ptab" id="ptab-favs" onclick="switchPanelTab('favs')">Избранное</button>
-          </div>
-          <div class="panel-body" id="panelBody">
-            <div class="idle-state">
-              <div class="idle-ico">💪</div>
-              <div class="idle-txt">Выберите группу мышц на схеме или в списке</div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <div class="grid-title" id="gridTitle">Группы мышц</div>
+      <div class="mgrid" id="mgrid"></div>
     </div>
   </div>
 
-  <!-- PROFILE SCREEN -->
-  <div class="screen" id="s-me">
-    <div class="profile-scroll">
-      <div class="avatar-section">
-        <div class="avatar-circle" id="avatarCircle" onclick="document.getElementById('avatarInput').click()">👤</div>
-        <input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="onAvatarChange(this)">
-        <div class="avatar-name" id="displayName">Ваш профиль</div>
+  <!-- ═══════════ PROFILE ═══════════ -->
+  <div class="view" id="v-me">
+    <div class="hdr"><div><h1>Я</h1><div class="sub">Личный профиль</div></div></div>
+
+    <div class="profile-hdr">
+      <div class="avatar" id="avatarBox">👤</div>
+      <div>
+        <div style="font-size:18px;font-weight:700" id="hdrName">Твой профиль</div>
+        <div style="font-size:13px;color:var(--muted)">Заполни данные</div>
       </div>
-      <div class="form-section">
-        <div class="full-field">
-          <label>Имя</label>
-          <input type="text" id="pName" placeholder="Введите имя" oninput="updateDisplayName(this.value)">
-        </div>
-        <div class="form-row">
-          <div class="form-field">
-            <label>Возраст</label>
-            <input type="number" id="pAge" placeholder="—" min="1" max="120">
-          </div>
-          <div class="form-field">
-            <label>Рост (см)</label>
-            <input type="number" id="pHeight" placeholder="—" min="100" max="250">
-          </div>
-          <div class="form-field">
-            <label>Вес (кг)</label>
-            <input type="number" id="pWeight" placeholder="—" min="30" max="300">
-          </div>
-        </div>
-      </div>
-      <div class="form-section">
-        <div class="form-section-title">Параметры тела</div>
-        <div class="form-row">
-          <div class="form-field">
-            <label>Грудь (см)</label>
-            <input type="number" id="pChest" placeholder="—">
-          </div>
-          <div class="form-field">
-            <label>Талия (см)</label>
-            <input type="number" id="pWaist" placeholder="—">
-          </div>
-          <div class="form-field">
-            <label>Бёдра (см)</label>
-            <input type="number" id="pHips" placeholder="—">
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-field">
-            <label>Бицепс (см)</label>
-            <input type="number" id="pBiceps" placeholder="—">
-          </div>
-          <div class="form-field">
-            <label>Ляжка (см)</label>
-            <input type="number" id="pThigh" placeholder="—">
-          </div>
-        </div>
-      </div>
-      <div class="photo-section">
-        <div class="photo-section-title">Фото</div>
-        <div class="photo-row">
-          <div class="photo-btn" id="photo-front-btn" onclick="document.getElementById('photo-front').click()">
-            <input type="file" id="photo-front" accept="image/*" style="display:none" onchange="onPhotoChange(this,'front')">
-            <span class="ph-ico">📷</span>
-            <span class="ph-lbl">Спереди</span>
-          </div>
-          <div class="photo-btn" id="photo-side-btn" onclick="document.getElementById('photo-side').click()">
-            <input type="file" id="photo-side" accept="image/*" style="display:none" onchange="onPhotoChange(this,'side')">
-            <span class="ph-ico">📷</span>
-            <span class="ph-lbl">Сбоку</span>
-          </div>
-          <div class="photo-btn" id="photo-back-btn" onclick="document.getElementById('photo-back').click()">
-            <input type="file" id="photo-back" accept="image/*" style="display:none" onchange="onPhotoChange(this,'back')">
-            <span class="ph-ico">📷</span>
-            <span class="ph-lbl">Сзади</span>
-          </div>
-        </div>
-      </div>
-      <button class="save-btn" onclick="saveProfile()">Сохранить</button>
     </div>
+
+    <div class="sec">
+      <h2>Основное</h2>
+      <div class="field">
+        <label>Имя</label>
+        <input id="p-name" placeholder="Иван"/>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Возраст</label><input id="p-age" type="number" placeholder="25"/></div>
+        <div class="field"><label>Рост, см</label><input id="p-height" type="number" placeholder="180"/></div>
+      </div>
+      <div class="field"><label>Вес, кг</label><input id="p-weight" type="number" placeholder="75"/></div>
+    </div>
+
+    <div class="sec">
+      <h2>Фото</h2>
+      <div class="photos">
+        <label class="photo" id="ph-front-l"><span>📷</span>Спереди<input type="file" accept="image/*" data-k="front" onchange="onPhoto(event)"/></label>
+        <label class="photo" id="ph-side-l"><span>📷</span>Сбоку<input type="file" accept="image/*" data-k="side" onchange="onPhoto(event)"/></label>
+        <label class="photo" id="ph-back-l"><span>📷</span>Сзади<input type="file" accept="image/*" data-k="back" onchange="onPhoto(event)"/></label>
+      </div>
+    </div>
+
+    <div class="sec">
+      <h2>Параметры тела, см</h2>
+      <div class="row2">
+        <div class="field"><label>Грудь</label><input id="m-chest" type="number" placeholder="100"/></div>
+        <div class="field"><label>Талия (узкая)</label><input id="m-waist" type="number" placeholder="80"/></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Бёдра</label><input id="m-hips" type="number" placeholder="100"/></div>
+        <div class="field"><label>Бицепс</label><input id="m-bicep" type="number" placeholder="35"/></div>
+      </div>
+      <div class="field"><label>Ляжка</label><input id="m-thigh" type="number" placeholder="55"/></div>
+    </div>
+
+    <button class="btn" onclick="saveProfile()">Сохранить</button>
   </div>
 
-  <!-- Bottom nav -->
-  <nav class="bnav">
-    <button class="bnav-btn active" id="bnav-home" onclick="goTo('home')">
-      <span class="ico">🏠</span>
-      <span>Главная</span>
+  <!-- ═══════════ TAB BAR ═══════════ -->
+  <nav class="tabbar">
+    <button class="tab" data-t="home" onclick="tab('home')">
+      <svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7h-6v7H4a1 1 0 0 1-1-1z"/></svg>
+      Главная
     </button>
-    <button class="bnav-btn" id="bnav-nutr" onclick="goTo('nutr')">
-      <span class="ico">🥗</span>
-      <span>Питание</span>
+    <button class="tab" data-t="food" onclick="tab('food')">
+      <svg viewBox="0 0 24 24"><path d="M12 3c4 0 7 4 7 9s-3 9-7 9-7-4-7-9 3-9 7-9z"/><path d="M12 3c-1 2-1 4 0 6"/></svg>
+      Питание
     </button>
-    <button class="bnav-btn" id="bnav-lib" onclick="goTo('lib')">
-      <span class="ico">📖</span>
-      <span>Библиотека</span>
+    <button class="tab on" data-t="lib" onclick="tab('lib')">
+      <svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h3v18H6a2 2 0 0 1-2-2z"/><path d="M10 3h4v18h-4z"/><path d="M15 5l3-1 3 16-3 1z"/></svg>
+      Библиотека
     </button>
-    <button class="bnav-btn" id="bnav-me" onclick="goTo('me')">
-      <span class="ico">👤</span>
-      <span>Я</span>
+    <button class="tab" data-t="me" onclick="tab('me')">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>
+      Я
     </button>
   </nav>
 </div>
 
-<div class="toast" id="toast"></div>
+<!-- BOTTOM SHEET -->
+<div class="sheet-bg" id="sheetBg" onclick="closeSheet()"></div>
+<div class="sheet" id="sheet">
+  <div class="sheet-grab"></div>
+  <div id="sheetBody"></div>
+</div>
 
 <script>
-// ─── Telegram WebApp init ────────────────────────────────────────────────────
-if (window.Telegram && window.Telegram.WebApp) {
-  Telegram.WebApp.ready();
-  Telegram.WebApp.expand();
-}
-
-// ─── Exercise Data ────────────────────────────────────────────────────────────
+/* ════════ DATA ════════ */
 const M = {
-  chest: { name:'Грудные', cat:'Верх тела', syn:['shoulders','triceps'], v:['front'],
+  chest:     { name:'Грудные', cat:'Верх тела', icon:'💪', syn:['shoulders','triceps'], v:['front'],
     parts:[
-      {name:'Верхняя', vids:[{t:'Жим на наклонной',u:'https://t.me/c/YOUR_CHANNEL/1'},{t:'Жим гантелей наклон',u:'https://t.me/c/YOUR_CHANNEL/2'},{t:'Сведение верхний блок',u:'https://t.me/c/YOUR_CHANNEL/3'}]},
-      {name:'Середина', vids:[{t:'Жим штанги лёжа',u:'https://t.me/c/YOUR_CHANNEL/4'},{t:'Разводка гантелей',u:'https://t.me/c/YOUR_CHANNEL/5'},{t:'Кроссовер горизонт',u:'https://t.me/c/YOUR_CHANNEL/6'}]},
-      {name:'Нижняя', vids:[{t:'Отжимания на брусьях',u:'https://t.me/c/YOUR_CHANNEL/7'},{t:'Жим вниз голова',u:'https://t.me/c/YOUR_CHANNEL/8'},{t:'Кроссовер сверху-вниз',u:'https://t.me/c/YOUR_CHANNEL/9'}]}
+      { name:'Верхняя часть', vids:[
+        {t:'Жим штанги на наклонной',    u:'https://t.me/c/YOUR_CHANNEL/1'},
+        {t:'Жим гантелей на наклонной',  u:'https://t.me/c/YOUR_CHANNEL/2'},
+        {t:'Сведение на наклонной',      u:'https://t.me/c/YOUR_CHANNEL/3'},
+      ]},
+      { name:'Середина', vids:[
+        {t:'Жим штанги лёжа',            u:'https://t.me/c/YOUR_CHANNEL/4'},
+        {t:'Разводка гантелей лёжа',     u:'https://t.me/c/YOUR_CHANNEL/5'},
+        {t:'Сведение в кроссовере',      u:'https://t.me/c/YOUR_CHANNEL/6'},
+      ]},
+      { name:'Нижняя часть', vids:[
+        {t:'Отжимания на брусьях',       u:'https://t.me/c/YOUR_CHANNEL/7'},
+        {t:'Жим на обратной наклонной',  u:'https://t.me/c/YOUR_CHANNEL/8'},
+        {t:'Кроссовер сверху-вниз',      u:'https://t.me/c/YOUR_CHANNEL/9'},
+      ]},
     ]},
-  upperback: {name:'Верх спины', cat:'Спина', syn:['lats','biceps'], v:['back'],
-    vids:[{t:'Тяга штанги в наклоне',u:'https://t.me/c/YOUR_CHANNEL/10'},{t:'Тяга гантели одной рукой',u:'https://t.me/c/YOUR_CHANNEL/11'},{t:'Тяга горизонт блока',u:'https://t.me/c/YOUR_CHANNEL/12'}]},
-  lats: {name:'Широчайшие', cat:'Спина', syn:['biceps','upperback'], v:['back'],
-    vids:[{t:'Подтягивания широким',u:'https://t.me/c/YOUR_CHANNEL/13'},{t:'Тяга верхнего блока',u:'https://t.me/c/YOUR_CHANNEL/14'},{t:'Пуловер с гантелью',u:'https://t.me/c/YOUR_CHANNEL/15'}]},
-  traps: {name:'Трапеции', cat:'Спина', syn:['shoulders','upperback'], v:['back'],
-    vids:[{t:'Шраги со штангой',u:'https://t.me/c/YOUR_CHANNEL/16'},{t:'Шраги с гантелями',u:'https://t.me/c/YOUR_CHANNEL/17'},{t:'Тяга к подбородку',u:'https://t.me/c/YOUR_CHANNEL/18'}]},
-  shoulders: {name:'Плечи', cat:'Верх тела', syn:['chest','triceps'], v:['front','back'],
+  shoulders: { name:'Плечи', cat:'Верх тела', icon:'🏋️', syn:['chest','triceps'], v:['front','back'],
     parts:[
-      {name:'Передний пучок', vids:[{t:'Жим штанги стоя',u:'https://t.me/c/YOUR_CHANNEL/19'},{t:'Жим гантелей сидя',u:'https://t.me/c/YOUR_CHANNEL/20'},{t:'Подъём перед собой',u:'https://t.me/c/YOUR_CHANNEL/21'}]},
-      {name:'Средний пучок', vids:[{t:'Разводка в стороны',u:'https://t.me/c/YOUR_CHANNEL/22'},{t:'Тяга к подбородку',u:'https://t.me/c/YOUR_CHANNEL/23'},{t:'Махи на блоке',u:'https://t.me/c/YOUR_CHANNEL/24'}]},
-      {name:'Задний пучок', vids:[{t:'Разводка в наклоне',u:'https://t.me/c/YOUR_CHANNEL/25'},{t:'Обратная бабочка',u:'https://t.me/c/YOUR_CHANNEL/26'},{t:'Тяга к лицу',u:'https://t.me/c/YOUR_CHANNEL/27'}]}
+      { name:'Передний пучок', vids:[
+        {t:'Жим штанги стоя',            u:'https://t.me/c/YOUR_CHANNEL/14'},
+        {t:'Жим гантелей сидя',          u:'https://t.me/c/YOUR_CHANNEL/15'},
+        {t:'Подъём гантелей перед собой',u:'https://t.me/c/YOUR_CHANNEL/16'},
+      ]},
+      { name:'Средний пучок', vids:[
+        {t:'Разводка гантелей в стороны',u:'https://t.me/c/YOUR_CHANNEL/17'},
+        {t:'Тяга к подбородку',          u:'https://t.me/c/YOUR_CHANNEL/18'},
+        {t:'Махи в стороны на блоке',    u:'https://t.me/c/YOUR_CHANNEL/19'},
+      ]},
+      { name:'Задний пучок', vids:[
+        {t:'Разводка в наклоне',         u:'https://t.me/c/YOUR_CHANNEL/20'},
+        {t:'Обратные разведения',        u:'https://t.me/c/YOUR_CHANNEL/21'},
+        {t:'Тяга к лицу',                u:'https://t.me/c/YOUR_CHANNEL/22'},
+      ]},
     ]},
-  biceps: {name:'Бицепс', cat:'Руки', syn:['forearms','lats'], v:['front'],
-    vids:[{t:'Сгибание со штангой',u:'https://t.me/c/YOUR_CHANNEL/28'},{t:'Молотковые сгибания',u:'https://t.me/c/YOUR_CHANNEL/29'},{t:'Концентрированное',u:'https://t.me/c/YOUR_CHANNEL/30'}]},
-  triceps: {name:'Трицепс', cat:'Руки', syn:['shoulders','chest'], v:['back'],
-    vids:[{t:'Жим узким хватом',u:'https://t.me/c/YOUR_CHANNEL/31'},{t:'Французский жим',u:'https://t.me/c/YOUR_CHANNEL/32'},{t:'Разгибание на блоке',u:'https://t.me/c/YOUR_CHANNEL/33'}]},
-  forearms: {name:'Предплечья', cat:'Руки', syn:['biceps'], v:['front','back'],
-    vids:[{t:'Сгибание кисти',u:'https://t.me/c/YOUR_CHANNEL/34'},{t:'Обратное сгибание',u:'https://t.me/c/YOUR_CHANNEL/35'},{t:'Вращение запястьями',u:'https://t.me/c/YOUR_CHANNEL/36'}]},
-  core: {name:'Пресс', cat:'Корпус', syn:['lats'], v:['front'],
-    vids:[{t:'Скручивания',u:'https://t.me/c/YOUR_CHANNEL/37'},{t:'Планка',u:'https://t.me/c/YOUR_CHANNEL/38'},{t:'Подъём ног в висе',u:'https://t.me/c/YOUR_CHANNEL/39'},{t:'Ролик',u:'https://t.me/c/YOUR_CHANNEL/40'}]},
-  quads: {name:'Квадрицепс', cat:'Ноги', syn:['glutes','calves'], v:['front'],
-    vids:[{t:'Приседание',u:'https://t.me/c/YOUR_CHANNEL/41'},{t:'Жим ногами',u:'https://t.me/c/YOUR_CHANNEL/42'},{t:'Разгибание в тренажёре',u:'https://t.me/c/YOUR_CHANNEL/43'},{t:'Выпады',u:'https://t.me/c/YOUR_CHANNEL/44'}]},
-  hamstrings: {name:'Бицепс бедра', cat:'Ноги', syn:['glutes'], v:['back'],
-    vids:[{t:'Становая на прямых',u:'https://t.me/c/YOUR_CHANNEL/45'},{t:'Сгибание в тренажёре',u:'https://t.me/c/YOUR_CHANNEL/46'},{t:'Мёртвая тяга',u:'https://t.me/c/YOUR_CHANNEL/47'}]},
-  glutes: {name:'Ягодичные', cat:'Ноги', syn:['hamstrings','quads'], v:['back'],
+  biceps:    { name:'Бицепс', cat:'Руки', icon:'💪', syn:['forearms','lats'], v:['front'],
+    vids:[
+      {t:'Сгибание со штангой стоя',     u:'https://t.me/c/YOUR_CHANNEL/30'},
+      {t:'Молотковые сгибания',          u:'https://t.me/c/YOUR_CHANNEL/31'},
+      {t:'Концентрированное сгибание',   u:'https://t.me/c/YOUR_CHANNEL/32'},
+    ]},
+  triceps:   { name:'Трицепс', cat:'Руки', icon:'💪', syn:['shoulders','chest'], v:['back'],
+    vids:[
+      {t:'Жим узким хватом',             u:'https://t.me/c/YOUR_CHANNEL/40'},
+      {t:'Французский жим',              u:'https://t.me/c/YOUR_CHANNEL/41'},
+      {t:'Разгибание на блоке',          u:'https://t.me/c/YOUR_CHANNEL/42'},
+    ]},
+  forearms:  { name:'Предплечья', cat:'Руки', icon:'✊', syn:['biceps'], v:['front','back'],
+    vids:[
+      {t:'Сгибание кисти со штангой',    u:'https://t.me/c/YOUR_CHANNEL/50'},
+      {t:'Обратное сгибание запястья',   u:'https://t.me/c/YOUR_CHANNEL/51'},
+    ]},
+  upperback: { name:'Верх спины', cat:'Спина', icon:'🦅', syn:['lats','biceps'], v:['back'],
+    vids:[
+      {t:'Тяга штанги в наклоне',        u:'https://t.me/c/YOUR_CHANNEL/60'},
+      {t:'Тяга гантели одной рукой',     u:'https://t.me/c/YOUR_CHANNEL/61'},
+      {t:'Тяга горизонтального блока',   u:'https://t.me/c/YOUR_CHANNEL/62'},
+    ]},
+  lats:      { name:'Широчайшие', cat:'Спина', icon:'🦅', syn:['biceps','upperback'], v:['back'],
+    vids:[
+      {t:'Подтягивания широким хватом',  u:'https://t.me/c/YOUR_CHANNEL/70'},
+      {t:'Тяга верхнего блока',          u:'https://t.me/c/YOUR_CHANNEL/71'},
+      {t:'Пуловер с гантелью',           u:'https://t.me/c/YOUR_CHANNEL/72'},
+    ]},
+  traps:     { name:'Трапеции', cat:'Спина', icon:'🦅', syn:['shoulders','upperback'], v:['back'],
+    vids:[
+      {t:'Шраги со штангой',             u:'https://t.me/c/YOUR_CHANNEL/80'},
+      {t:'Шраги с гантелями',            u:'https://t.me/c/YOUR_CHANNEL/81'},
+      {t:'Тяга к подбородку',            u:'https://t.me/c/YOUR_CHANNEL/82'},
+    ]},
+  lowerback: { name:'Поясница', cat:'Спина', icon:'🦅', syn:['glutes','hamstrings'], v:['back'],
+    vids:[
+      {t:'Гиперэкстензия',               u:'https://t.me/c/YOUR_CHANNEL/90'},
+      {t:'Становая тяга',                u:'https://t.me/c/YOUR_CHANNEL/91'},
+      {t:'Доброе утро со штангой',       u:'https://t.me/c/YOUR_CHANNEL/92'},
+    ]},
+  core:      { name:'Пресс', cat:'Корпус', icon:'🔥', syn:['lats'], v:['front'],
+    vids:[
+      {t:'Скручивания',                  u:'https://t.me/c/YOUR_CHANNEL/100'},
+      {t:'Планка',                       u:'https://t.me/c/YOUR_CHANNEL/101'},
+      {t:'Подъём ног в висе',            u:'https://t.me/c/YOUR_CHANNEL/102'},
+      {t:'Ролик для пресса',             u:'https://t.me/c/YOUR_CHANNEL/103'},
+    ]},
+  quads:     { name:'Квадрицепс', cat:'Ноги', icon:'🦵', syn:['glutes','calves'], v:['front'],
+    vids:[
+      {t:'Приседание со штангой',        u:'https://t.me/c/YOUR_CHANNEL/110'},
+      {t:'Жим ногами',                   u:'https://t.me/c/YOUR_CHANNEL/111'},
+      {t:'Разгибание ног в тренажёре',   u:'https://t.me/c/YOUR_CHANNEL/112'},
+      {t:'Выпады',                       u:'https://t.me/c/YOUR_CHANNEL/113'},
+    ]},
+  hamstrings:{ name:'Бицепс бедра', cat:'Ноги', icon:'🦵', syn:['glutes'], v:['back'],
+    vids:[
+      {t:'Становая на прямых ногах',     u:'https://t.me/c/YOUR_CHANNEL/120'},
+      {t:'Сгибание ног в тренажёре',     u:'https://t.me/c/YOUR_CHANNEL/121'},
+      {t:'Мёртвая тяга с гантелями',     u:'https://t.me/c/YOUR_CHANNEL/122'},
+    ]},
+  glutes:    { name:'Ягодичные', cat:'Ноги', icon:'🍑', syn:['hamstrings','quads'], v:['back'],
     parts:[
-      {name:'Большая ягодичная', vids:[{t:'Ягодичный мостик',u:'https://t.me/c/YOUR_CHANNEL/48'},{t:'Приседание сумо',u:'https://t.me/c/YOUR_CHANNEL/49'},{t:'Становая сумо',u:'https://t.me/c/YOUR_CHANNEL/50'}]},
-      {name:'Средняя и малая', vids:[{t:'Отведение в блоке',u:'https://t.me/c/YOUR_CHANNEL/51'},{t:'Боковые отведения',u:'https://t.me/c/YOUR_CHANNEL/52'},{t:'Боковая планка',u:'https://t.me/c/YOUR_CHANNEL/53'}]}
+      { name:'Большая ягодичная', vids:[
+        {t:'Ягодичный мостик со штангой',u:'https://t.me/c/YOUR_CHANNEL/130'},
+        {t:'Становая тяга сумо',         u:'https://t.me/c/YOUR_CHANNEL/131'},
+        {t:'Приседание со штангой',      u:'https://t.me/c/YOUR_CHANNEL/132'},
+        {t:'Болгарский сплит-присед',    u:'https://t.me/c/YOUR_CHANNEL/133'},
+      ]},
+      { name:'Верх (средняя и малая)', vids:[
+        {t:'Отведение ноги в блоке',     u:'https://t.me/c/YOUR_CHANNEL/134'},
+        {t:'Боковые отведения с резинкой',u:'https://t.me/c/YOUR_CHANNEL/135'},
+        {t:'Боковая планка с подъёмом',  u:'https://t.me/c/YOUR_CHANNEL/136'},
+      ]},
     ]},
-  calves: {name:'Икры', cat:'Ноги', syn:['quads'], v:['front','back'],
-    vids:[{t:'Подъём на носки стоя',u:'https://t.me/c/YOUR_CHANNEL/54'},{t:'Подъём на носки сидя',u:'https://t.me/c/YOUR_CHANNEL/55'},{t:'Прыжки на носках',u:'https://t.me/c/YOUR_CHANNEL/56'}]},
-  adductors: {name:'Приводящие', cat:'Ноги', syn:['quads','glutes'], v:['front'],
-    vids:[{t:'Сведение ног тренажёр',u:'https://t.me/c/YOUR_CHANNEL/57'},{t:'Приседание сумо',u:'https://t.me/c/YOUR_CHANNEL/58'},{t:'Боковые выпады',u:'https://t.me/c/YOUR_CHANNEL/59'}]},
+  calves:    { name:'Икроножные', cat:'Ноги', icon:'🦵', syn:['quads'], v:['front','back'],
+    vids:[
+      {t:'Подъём на носки стоя',         u:'https://t.me/c/YOUR_CHANNEL/140'},
+      {t:'Подъём на носки сидя',         u:'https://t.me/c/YOUR_CHANNEL/141'},
+    ]},
+  adductors: { name:'Приводящие', cat:'Ноги', icon:'🦵', syn:['quads','glutes'], v:['front'],
+    vids:[
+      {t:'Сведение ног в тренажёре',     u:'https://t.me/c/YOUR_CHANNEL/150'},
+      {t:'Приседание сумо',              u:'https://t.me/c/YOUR_CHANNEL/151'},
+    ]},
 };
 
-const FRONT_CHIPS = ['chest','shoulders','biceps','forearms','core','quads','adductors','calves'];
-const BACK_CHIPS  = ['traps','upperback','lats','shoulders','triceps','forearms','glutes','hamstrings','calves'];
+const FRONT_LIST = ['chest','shoulders','biceps','forearms','core','quads','adductors','calves'];
+const BACK_LIST  = ['traps','upperback','lats','lowerback','shoulders','triceps','forearms','glutes','hamstrings','calves'];
 
-// ─── State ────────────────────────────────────────────────────────────────────
-let curView     = 'front';
-let curSel      = null;
-let favs        = new Set(JSON.parse(localStorage.getItem('fitmap_favs') || '[]'));
-let curPanelTab = 'muscles';
+let cv='front', sel=null;
+let favs = new Set(JSON.parse(localStorage.getItem('favs')||'[]'));
 
-// ─── Navigation ───────────────────────────────────────────────────────────────
-function goTo(tab) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.bnav-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('s-' + tab).classList.add('active');
-  document.getElementById('bnav-' + tab).classList.add('active');
-  if (tab === 'home') updateHomeStats();
+/* ════════ TABS ════════ */
+function tab(t){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
+  document.getElementById('v-'+t).classList.add('on');
+  document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
+  hap('selection');
 }
 
-function updateHomeStats() {
-  document.getElementById('home-fav-count').textContent = favs.size;
+/* ════════ FIGURE ════════ */
+function sv(v){
+  cv=v;
+  document.getElementById('bf').className = v==='front'?'on':'';
+  document.getElementById('bb').className = v==='back'?'on':'';
+  document.getElementById('frontView').style.display = v==='front'?'':'none';
+  document.getElementById('backView').style.display  = v==='back' ?'':'none';
+  if (sel && !M[sel].v.includes(v)){ sel=null; }
+  rg(); upd();
 }
 
-// ─── View (front / back) ─────────────────────────────────────────────────────
-function sv(view) {
-  curView = view;
-  document.getElementById('seg-front').classList.toggle('active', view === 'front');
-  document.getElementById('seg-back').classList.toggle('active', view === 'back');
-  document.getElementById('fz').style.display = view === 'front' ? '' : 'none';
-  document.getElementById('bz').style.display = view === 'back'  ? '' : 'none';
-  rc();
-  upd();
+function sm(k){
+  sel = sel===k?null:k;
+  if (sel && !M[sel].v.includes(cv)){ cv=M[sel].v[0]; sv(cv); }
+  rg(); upd();
+  if (sel) openMuscle(sel);
+  hap('selection');
 }
 
-// ─── Muscle selection ─────────────────────────────────────────────────────────
-function sm(key) {
-  if (!M[key]) return;
-  haptic();
-  if (curSel === key) {
-    curSel = null;
-  } else {
-    curSel = key;
-    // Auto-switch view if muscle only visible on the other side
-    const muscle = M[key];
-    if (muscle.v && muscle.v.length === 1 && !muscle.v.includes(curView)) {
-      sv(muscle.v[0]);
-      return; // sv() calls rc() and upd() already
-    }
-  }
-  upd();
-  rc();
-  if (curPanelTab === 'muscles') renderPanel();
-}
-
-function haptic() {
-  try {
-    if (window.Telegram && Telegram.WebApp && Telegram.WebApp.HapticFeedback) {
-      Telegram.WebApp.HapticFeedback.impactOccurred('light');
-    }
-  } catch(e) {}
-}
-
-// ─── SVG fill update ──────────────────────────────────────────────────────────
-function upd() {
-  document.querySelectorAll('.mz').forEach(el => {
-    const g = el.getAttribute('data-g');
-    if (!curSel) {
-      el.style.fill    = '#d8daeb';
-      el.style.opacity = '1';
-    } else if (g === curSel) {
-      el.style.fill    = '#FF2D55';
-      el.style.opacity = '0.85';
-    } else if (M[curSel] && M[curSel].syn && M[curSel].syn.includes(g)) {
-      el.style.fill    = '#0A84FF';
-      el.style.opacity = '0.65';
-    } else {
-      el.style.fill    = '#d8daeb';
-      el.style.opacity = '0.25';
-    }
+function upd(){
+  document.querySelectorAll('.mz').forEach(e=>{
+    const g=e.dataset.g;
+    e.classList.remove('act','syn','dim');
+    if (!sel) return;
+    if (g===sel) e.classList.add('act');
+    else if (M[sel].syn.includes(g)) e.classList.add('syn');
+    else e.classList.add('dim');
   });
 }
 
-// ─── Muscle chip grid ─────────────────────────────────────────────────────────
-function rc() {
-  const grid = document.getElementById('muscleGrid');
-  const chips = curView === 'front' ? FRONT_CHIPS : BACK_CHIPS;
-  grid.innerHTML = chips.map(k => {
+/* ════════ GRID ════════ */
+function rg(){
+  const list = cv==='front'?FRONT_LIST:BACK_LIST;
+  document.getElementById('gridTitle').textContent = cv==='front'?'Группы спереди':'Группы сзади';
+  document.getElementById('mgrid').innerHTML = list.map(k=>{
     const m = M[k];
-    if (!m) return '';
-    const isActive = curSel === k;
-    return `<button class="chip-btn${isActive ? ' active' : ''}" onclick="sm('${k}')">${m.name}</button>`;
+    return `<div class="mcard${sel===k?' active':''}" onclick="sm('${k}')">
+      <span class="ic">${m.icon}</span>${m.name}</div>`;
   }).join('');
 }
 
-// ─── Panel tabs ───────────────────────────────────────────────────────────────
-function switchPanelTab(tab) {
-  curPanelTab = tab;
-  document.getElementById('ptab-muscles').classList.toggle('active', tab === 'muscles');
-  document.getElementById('ptab-favs').classList.toggle('active', tab === 'favs');
-  if (tab === 'muscles') renderPanel();
-  else renderFavs();
-}
-
-// ─── Exercise panel ───────────────────────────────────────────────────────────
-function renderPanel() {
-  const body = document.getElementById('panelBody');
-  if (!curSel) {
-    body.innerHTML = `<div class="idle-state"><div class="idle-ico">💪</div><div class="idle-txt">Выберите группу мышц на схеме или в списке</div></div>`;
-    return;
-  }
-  const m = M[curSel];
-  let html = `<div class="muscle-header">
-    <div class="muscle-name-big">${m.name}</div>
+/* ════════ SHEET ════════ */
+function openMuscle(k){
+  const m = M[k];
+  const synLabel = m.syn?.length
+    ? `<span class="tag tag-syn">помогают: ${m.syn.map(s=>M[s]?.name||s).join(', ')}</span>` : '';
+  const parts = m.parts || [{ name:null, vids:m.vids||[] }];
+  const partsHTML = parts.map(p=>`
+    ${p.name ? `<p class="vsec">${p.name} · ${p.vids.length}</p>` : `<p class="vsec">Упражнения · ${p.vids.length}</p>`}
+    ${p.vids.map((v,i)=>viRow(v,i)).join('')}
+  `).join('');
+  document.getElementById('sheetBody').innerHTML = `
     <div class="muscle-cat">${m.cat}</div>
-  </div>`;
-
-  if (m.syn && m.syn.length) {
-    html += `<div class="syn-row"><span class="syn-label">Помогают:&nbsp;</span>`;
-    m.syn.forEach(s => {
-      if (M[s]) html += `<button class="syn-chip" onclick="sm('${s}')">${M[s].name}</button>`;
-    });
-    html += `</div>`;
-  }
-
-  if (m.parts) {
-    m.parts.forEach((part, pi) => {
-      if (pi > 0) html += `<div class="part-divider"></div>`;
-      html += `<div class="part-header">${part.name}</div>`;
-      part.vids.forEach(v => {
-        const isFav = favs.has(v.t);
-        html += exRow(v, isFav);
-      });
-    });
-  } else if (m.vids) {
-    m.vids.forEach(v => {
-      const isFav = favs.has(v.t);
-      html += exRow(v, isFav);
-    });
-  }
-  body.innerHTML = html;
+    <div class="muscle-name">${m.name}</div>
+    <div class="tags">
+      <span class="tag tag-main">основная</span>${synLabel}
+    </div>
+    ${partsHTML}`;
+  showSheet();
 }
 
-function exRow(v, isFav) {
-  return `<div class="ex-row">
-    <a class="ex-link" href="${v.u}" target="_blank">${v.t}</a>
-    <button class="star-btn" onclick="toggleFav('${esc(v.t)}')" style="color:${isFav ? '#FF9F0A' : 'var(--star-off)'}">${isFav ? '★' : '☆'}</button>
+function viRow(v,i){
+  const fav = favs.has(v.u);
+  return `<div class="vi">
+    <a class="vico" href="${v.u}" target="_blank">${i+1}</a>
+    <a class="vt" href="${v.u}" target="_blank" style="text-decoration:none;color:inherit">${v.t}</a>
+    <span class="star${fav?' on':''}" onclick="toggleFav('${v.u}','${v.t.replace(/'/g,"\\'")}',this)">${fav?'★':'☆'}</span>
   </div>`;
 }
 
-// ─── Favorites ────────────────────────────────────────────────────────────────
-function toggleFav(title) {
-  if (favs.has(title)) favs.delete(title);
-  else favs.add(title);
-  localStorage.setItem('fitmap_favs', JSON.stringify([...favs]));
-  if (curPanelTab === 'muscles') renderPanel();
-  else renderFavs();
+function showSheet(){
+  document.getElementById('sheetBg').classList.add('on');
+  document.getElementById('sheet').classList.add('on');
+}
+function closeSheet(){
+  document.getElementById('sheetBg').classList.remove('on');
+  document.getElementById('sheet').classList.remove('on');
 }
 
-function renderFavs() {
-  const body = document.getElementById('panelBody');
-  if (favs.size === 0) {
-    body.innerHTML = `<div class="fav-empty"><div class="fav-ico">⭐</div><p>Нет избранных упражнений</p></div>`;
-    return;
-  }
-  let html = '';
-  Object.entries(M).forEach(([key, m]) => {
-    const allVids = m.parts ? m.parts.flatMap(p => p.vids) : (m.vids || []);
-    const matched = allVids.filter(v => favs.has(v.t));
-    if (matched.length) {
-      html += `<div class="fav-group-label">${m.name}</div>`;
-      matched.forEach(v => {
-        html += `<div class="ex-row">
-          <a class="ex-link" href="${v.u}" target="_blank">${v.t}</a>
-          <button class="star-btn" onclick="toggleFav('${esc(v.t)}')" style="color:#FF9F0A">★</button>
-        </div>`;
-      });
+/* ════════ FAVORITES ════════ */
+function toggleFav(u,t,el){
+  const map = JSON.parse(localStorage.getItem('favData')||'{}');
+  if (favs.has(u)){ favs.delete(u); delete map[u]; el.textContent='☆'; el.classList.remove('on'); }
+  else { favs.add(u); map[u]=t; el.textContent='★'; el.classList.add('on'); }
+  localStorage.setItem('favs', JSON.stringify([...favs]));
+  localStorage.setItem('favData', JSON.stringify(map));
+  hap('impact');
+}
+
+function openFavs(){
+  const map = JSON.parse(localStorage.getItem('favData')||'{}');
+  const items = Object.entries(map);
+  document.getElementById('sheetBody').innerHTML = `
+    <div class="muscle-cat">Сохранённое</div>
+    <div class="muscle-name">Избранное</div>
+    ${items.length===0
+      ? `<p style="color:var(--muted);font-size:13px;text-align:center;padding:30px 0">Пока пусто. Добавь упражнения, нажав звёздочку.</p>`
+      : items.map(([u,t],i)=>viRow({u,t},i)).join('')}`;
+  showSheet();
+}
+
+/* ════════ SEARCH ════════ */
+function onSearch(){
+  const q = document.getElementById('srch').value.trim().toLowerCase();
+  const r = document.getElementById('srResults');
+  const main = document.getElementById('libMain');
+  if (!q){ r.style.display='none'; main.style.display=''; return; }
+  main.style.display='none'; r.style.display='';
+  const found = [];
+  Object.entries(M).forEach(([k,m])=>{
+    const parts = m.parts || [{ name:null, vids:m.vids||[] }];
+    parts.forEach(p=>p.vids.forEach(v=>{
+      if (v.t.toLowerCase().includes(q)) found.push({...v, m:m.name});
+    }));
+  });
+  r.innerHTML = found.length===0
+    ? `<div class="sr-empty">Ничего не найдено</div>`
+    : `<div class="sec"><h2>Найдено: ${found.length}</h2>${found.map((v,i)=>`
+        <div class="vi">
+          <a class="vico" href="${v.u}" target="_blank">${i+1}</a>
+          <div style="flex:1">
+            <a class="vt" href="${v.u}" target="_blank" style="display:block;text-decoration:none;color:inherit">${v.t}</a>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">${v.m}</div>
+          </div>
+          <span class="star${favs.has(v.u)?' on':''}" onclick="toggleFav('${v.u}','${v.t.replace(/'/g,"\\'")}',this)">${favs.has(v.u)?'★':'☆'}</span>
+        </div>`).join('')}</div>`;
+}
+
+/* ════════ PROFILE ════════ */
+function loadProfile(){
+  const p = JSON.parse(localStorage.getItem('profile')||'{}');
+  ['name','age','height','weight'].forEach(k=>{ if(p[k]) document.getElementById('p-'+k).value=p[k]; });
+  ['chest','waist','hips','bicep','thigh'].forEach(k=>{ if(p[k]) document.getElementById('m-'+k).value=p[k]; });
+  if (p.name){ document.getElementById('hdrName').textContent=p.name; document.getElementById('avatarBox').textContent=p.name[0].toUpperCase(); }
+  ['front','side','back'].forEach(k=>{
+    if (p['photo_'+k]){
+      const lbl = document.getElementById('ph-'+k+'-l');
+      lbl.innerHTML = `<img src="${p['photo_'+k]}"/><input type="file" accept="image/*" data-k="${k}" onchange="onPhoto(event)"/>`;
     }
   });
-  body.innerHTML = html || `<div class="fav-empty"><div class="fav-ico">⭐</div><p>Нет избранных упражнений</p></div>`;
 }
-
-// ─── Search ───────────────────────────────────────────────────────────────────
-function onSearch(q) {
-  const sw = document.getElementById('searchResultsWrap');
-  const np = document.getElementById('normalPanel');
-  q = q.trim().toLowerCase();
-  if (!q) {
-    sw.style.display = 'none';
-    np.style.display = 'flex';
-    return;
-  }
-  sw.style.display = 'flex';
-  np.style.display = 'none';
-  let html = '';
-  let found = 0;
-  Object.entries(M).forEach(([key, m]) => {
-    const allVids = m.parts ? m.parts.flatMap(p => p.vids) : (m.vids || []);
-    const matched = allVids.filter(v => v.t.toLowerCase().includes(q));
-    if (matched.length) {
-      html += `<div class="search-group-label">${m.name}</div>`;
-      matched.forEach(v => {
-        const isFav = favs.has(v.t);
-        html += exRow(v, isFav);
-        found++;
-      });
-    }
-  });
-  document.getElementById('searchResults').innerHTML = found
-    ? html
-    : `<div class="idle-state" style="margin-top:40px"><div class="idle-ico" style="font-size:32px">🔍</div><div class="idle-txt">Ничего не найдено</div></div>`;
+function saveProfile(){
+  const p = JSON.parse(localStorage.getItem('profile')||'{}');
+  ['name','age','height','weight'].forEach(k=>p[k]=document.getElementById('p-'+k).value);
+  ['chest','waist','hips','bicep','thigh'].forEach(k=>p[k]=document.getElementById('m-'+k).value);
+  localStorage.setItem('profile',JSON.stringify(p));
+  loadProfile();
+  hap('success');
+  if (window.Telegram?.WebApp?.showAlert) Telegram.WebApp.showAlert('Сохранено ✓');
 }
-
-// ─── Profile ──────────────────────────────────────────────────────────────────
-function updateDisplayName(v) {
-  document.getElementById('displayName').textContent = v || 'Ваш профиль';
-}
-
-function onAvatarChange(input) {
-  if (!input.files[0]) return;
-  const url = URL.createObjectURL(input.files[0]);
-  const circle = document.getElementById('avatarCircle');
-  circle.style.backgroundImage  = `url(${url})`;
-  circle.style.backgroundSize   = 'cover';
-  circle.style.backgroundPosition = 'center';
-  circle.textContent = '';
-}
-
-function onPhotoChange(input, side) {
-  if (!input.files[0]) return;
-  const url = URL.createObjectURL(input.files[0]);
-  const btn = document.getElementById('photo-' + side + '-btn');
-  btn.innerHTML = `<img src="${url}" alt="${side}">`;
-}
-
-function saveProfile() {
-  const data = {
-    name:   document.getElementById('pName').value,
-    age:    document.getElementById('pAge').value,
-    height: document.getElementById('pHeight').value,
-    weight: document.getElementById('pWeight').value,
-    chest:  document.getElementById('pChest').value,
-    waist:  document.getElementById('pWaist').value,
-    hips:   document.getElementById('pHips').value,
-    biceps: document.getElementById('pBiceps').value,
-    thigh:  document.getElementById('pThigh').value,
+function onPhoto(e){
+  const f = e.target.files[0]; if(!f) return;
+  const k = e.target.dataset.k;
+  const r = new FileReader();
+  r.onload = ()=>{
+    const p = JSON.parse(localStorage.getItem('profile')||'{}');
+    p['photo_'+k] = r.result;
+    localStorage.setItem('profile',JSON.stringify(p));
+    loadProfile();
   };
-  localStorage.setItem('fitmap_profile', JSON.stringify(data));
-  showToast('Сохранено ✓');
+  r.readAsDataURL(f);
 }
 
-function loadProfile() {
-  try {
-    const data = JSON.parse(localStorage.getItem('fitmap_profile') || '{}');
-    if (data.name)   { document.getElementById('pName').value = data.name; updateDisplayName(data.name); }
-    if (data.age)    document.getElementById('pAge').value    = data.age;
-    if (data.height) document.getElementById('pHeight').value = data.height;
-    if (data.weight) document.getElementById('pWeight').value = data.weight;
-    if (data.chest)  document.getElementById('pChest').value  = data.chest;
-    if (data.waist)  document.getElementById('pWaist').value  = data.waist;
-    if (data.hips)   document.getElementById('pHips').value   = data.hips;
-    if (data.biceps) document.getElementById('pBiceps').value = data.biceps;
-    if (data.thigh)  document.getElementById('pThigh').value  = data.thigh;
-  } catch(e) {}
+/* ════════ HELPERS ════════ */
+function hap(t){
+  const h = window.Telegram?.WebApp?.HapticFeedback;
+  if (!h) return;
+  if (t==='selection') h.selectionChanged();
+  else if (t==='success') h.notificationOccurred('success');
+  else h.impactOccurred('light');
 }
 
-// ─── Toast ────────────────────────────────────────────────────────────────────
-let _toastTimer;
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  clearTimeout(_toastTimer);
-  _toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+if (window.Telegram?.WebApp){
+  Telegram.WebApp.ready(); Telegram.WebApp.expand();
+  Telegram.WebApp.setHeaderColor?.('secondary_bg_color');
 }
 
-// ─── Utility ─────────────────────────────────────────────────────────────────
-function esc(s) {
-  return s.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-}
-
-// ─── Init ─────────────────────────────────────────────────────────────────────
-rc();
-upd();
+sv('front');
 loadProfile();
-updateHomeStats();
 </script>
 </body>
 </html>
